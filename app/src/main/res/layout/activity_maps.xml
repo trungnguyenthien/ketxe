@@ -7,31 +7,55 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity"
     tools:ignore="HardcodedText">
-
+    <!--
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:src="@drawable/common_full_open_on_phone"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="16dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:src="@drawable/common_google_signin_btn_icon_dark_focused"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="86dp" />
+    </fragment>
+    -->
+
+    <LinearLayout
+        android:id="@+id/main_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+    </LinearLayout>
 
     <!--this the navigation view which draws
         and shows the navigation drawer-->
     <!--include the menu created in the menu folder-->
     <com.google.android.material.navigation.NavigationView
+        android:id="@+id/custom_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/navigation_menu">
+        android:layout_gravity="start">
 
-        <LinearLayout
+        <include
+            layout="@layout/drawer_menu_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            tools:layout_editor_absoluteX="122dp"
-            tools:layout_editor_absoluteY="70dp">
-
-        </LinearLayout>
+            android:layout_height="match_parent" />
     </com.google.android.material.navigation.NavigationView>
+
 </androidx.drawerlayout.widget.DrawerLayout>

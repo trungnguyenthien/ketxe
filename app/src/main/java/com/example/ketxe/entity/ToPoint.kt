@@ -1,3 +1,5 @@
+package com.example.ketxe.entity
+
 import com.google.gson.annotations.SerializedName
 
 /*
