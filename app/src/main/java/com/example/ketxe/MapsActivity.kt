@@ -93,9 +93,13 @@ class MapsActivity : AppCompatActivity() {
 
         replaceFragment(ggMyMapFragment)
 
-        myLocService.request(this) { location ->
+        myLocService.request(this, onStart = {
 
-        }
+        }, onStop = {
+
+        }, onSuccess = {
+
+        })
     }
 
     val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
