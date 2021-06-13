@@ -24,8 +24,9 @@ class MapsActivity : AppCompatActivity() {
     private var myLocService: MyLocationService = MyLocationRequester()
 
     @BindView(R.id.my_drawer_layout) lateinit var drawerLayout: DrawerLayout
-    @BindView(R.id.custom_nav_view) lateinit var navigationViewHolder: NavigationViewHolder
-
+    private val navigationViewHolder: NavigationViewHolder by lazy {
+        NavigationViewHolder(findViewById(R.id.custom_nav_view))
+    }
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
