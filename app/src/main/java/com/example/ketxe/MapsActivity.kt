@@ -1,66 +1,35 @@
 package com.example.ketxe
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
+import butterknife.BindView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.MyLocationRequester
 import com.example.ketxe.view.home.MyLocationService
-import com.example.ketxe.view.home.MyLocationServiceImpl
 import com.example.ketxe.view.home.MyMapFragment
-import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
 class MapsActivity : AppCompatActivity() {
-
-//    private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
-    private var myLocService: MyLocationService = MyLocationServiceImpl(this)
+    private var myLocService: MyLocationService = MyLocationRequester()
 
-
-    private val addPinFab: FloatingActionButton by lazy {
-        findViewById(R.id.fab)
-    }
-
-    private val myLocationFab: FloatingActionButton by lazy {
-        findViewById(R.id.fab2)
-    }
-
-    private val drawerLayout: DrawerLayout by lazy {
-        findViewById(R.id.my_drawer_layout)
-    }
+    @BindView(R.id.my_drawer_layout) lateinit var drawerLayout: DrawerLayout
+    @BindView(R.id.custom_nav_view) lateinit var navigationViewHolder: NavigationViewHolder
 
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
 
-    private val navigationViewHolder: NavigationViewHolder by lazy {
-        NavigationViewHolder(findViewById(R.id.custom_nav_view))
-    }
-
-    private val fragmentManager: FragmentManager by lazy { supportFragmentManager }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,16 +62,20 @@ class MapsActivity : AppCompatActivity() {
 
         replaceFragment(ggMyMapFragment)
 
-        myLocService.request(this, onStart = {
+        ggMyMapFragment.addMarkerButton.setOnClickListener {
 
-        }, onStop = {
+        }
 
-        }, onSuccess = {
+        ggMyMapFragment.myLocationButton.setOnClickListener {
+
+        }
+
+        myLocService.request(this, onStart = { }, onStop = {  }, onSuccess = {
 
         })
     }
 
-    val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
+    private val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
         MyMapFragment()
     }
 
@@ -185,22 +158,4 @@ class NavigationViewHolder(root: View) {
 //        listView.adapter
     }
 }
-
-
-fun GoogleMap.moveCamera(
-    lat: Double,
-    lon: Double,
-    zoom: Double = 15.0,
-    animated: Boolean = true
-) {
-    val loc = LatLng(lat, lon)
-    val cameraUpdate = CameraUpdateFactory.newLatLngZoom(loc, zoom.toFloat())
-    if (animated) {
-        this.animateCamera(cameraUpdate)
-    } else {
-        this.moveCamera(cameraUpdate)
-    }
-}
-
-
 
