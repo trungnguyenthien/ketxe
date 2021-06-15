@@ -13,17 +13,20 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import com.example.ketxe.databinding.ActivityMapsBinding
-import com.example.ketxe.view.home.MyLocationRequester
-import com.example.ketxe.view.home.MyLocationService
-import com.example.ketxe.view.home.MyMapFragment
+import com.example.ketxe.view.home.*
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 
 
 class MapsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMapsBinding
-    private var myLocService: MyLocationService = MyLocationRequester()
 
-    @BindView(R.id.my_drawer_layout) lateinit var drawerLayout: DrawerLayout
+    private val presenter: HomePresenter = HomePresenterImpl(this)
+
+    private val drawerLayout: DrawerLayout by lazy {
+        findViewById(R.id.my_drawer_layout)
+    }
+
     private val navigationViewHolder: NavigationViewHolder by lazy {
         NavigationViewHolder(findViewById(R.id.custom_nav_view))
     }
@@ -43,37 +46,26 @@ class MapsActivity : AppCompatActivity() {
         // Show menu button at left navigationBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-//        addPinFab.setOnClickListener {
-//            // Handle click action
-//            val lat = mMap.cameraPosition.target.latitude
-//            val lon = mMap.cameraPosition.target.longitude
-//            Toast.makeText(this, "$lat, $lon", Toast.LENGTH_SHORT).show()
-//
-//        }
-
-//        myLocationFab.setOnClickListener {
-////            clickHandlerOfMyLocationFab()
-//            myLocRequester.startRequest(listener = this)
-//        }
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-//        val mapFragment = supportFragmentManager
-//            .findFragmentById(R.id.map) as SupportMapFragment
-//        mapFragment.getMapAsync(this)
 
         replaceFragment(ggMyMapFragment)
 
-        ggMyMapFragment.addMarkerButton.setOnClickListener {
-
+        ggMyMapFragment.onClickAddMarkerButton = {
+            ggMyMapFragment.centerLocation()?.let {
+                presenter.onTapAddMarker(it)
+            }
         }
 
-        ggMyMapFragment.myLocationButton.setOnClickListener {
-
+        ggMyMapFragment.onClickMyLocationButton = {
+            presenter.onTapMyLocation()
         }
+    }
 
-        myLocService.request(this, onStart = { }, onStop = {  }, onSuccess = {
+    fun addMarker(latlon: LatLng) {
 
-        })
+    }
+
+    fun moveMapCamera(latlon: LatLng) {
+        ggMyMapFragment.ggMap?.moveCamera(lat = latlon.latitude, lon = latlon.longitude, zoom = 17.0, animated = true)
     }
 
     private val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
@@ -84,7 +76,6 @@ class MapsActivity : AppCompatActivity() {
         val fragmentManger = supportFragmentManager
         val transaction = fragmentManger.beginTransaction()
         transaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
-        // main_fragment_container is LinearLayout
         transaction.replace(R.id.main_fragment_container, fragment)
         transaction.commit()
     }
@@ -97,37 +88,13 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
+    fun showLoadingIndicator() {
+//        TODO("Not yet implemented")
+    }
 
-
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-//    override fun onMapReady(googleMap: GoogleMap) {
-//        mMap = googleMap
-//
-//        // Add a marker in Sydney and move the camera
-//        val sydney = LatLng(-34.0, 151.0)
-//        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-//    }
-
-    var currentMarker: Marker? = null
-
-//    private fun moveMap(lat: Double, lon: Double, zoom: Double) {
-//        currentMarker?.remove()
-//        val here = LatLng(lat, lon)
-//        currentMarker = mMap.addMarker(MarkerOptions().position(here))
-//        mMap.moveCamera(lat, lon, zoom, true)
-//    }
-
+    fun hideLoadingIndicator() {
+//        TODO("Not yet implemented")
+    }
 }
 
 class NavigationViewHolder(root: View) {

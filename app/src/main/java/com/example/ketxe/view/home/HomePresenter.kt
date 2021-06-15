@@ -1,5 +1,9 @@
 package com.example.ketxe.view.home
 
+import android.location.Location
+import com.example.ketxe.MapsActivity
+import com.google.android.gms.maps.model.LatLng
+
 interface ActivityPresenter {
     fun onStart()
     fun onResume(time: Int)
@@ -9,9 +13,30 @@ interface ActivityPresenter {
 }
 
 interface HomePresenter {
-
+    fun onTapMyLocation()
+    fun onTapAddMarker(mapLocation: LatLng)
+    fun onSetBackgroundAlarm()
 }
 
-class HomePresenterImpl: HomePresenter {
+class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
+    private var myLocService: MyLocationService = MyLocationRequester()
+    override fun onTapMyLocation() {
+        myLocService.request(mapsActivity,
+            onStart = {
+                mapsActivity.showLoadingIndicator()
+            }, onStop = {
+                mapsActivity.hideLoadingIndicator()
+            }, onSuccess = {
+                mapsActivity.moveMapCamera(LatLng(it.latitude, it.longitude))
+            })
+    }
+
+    override fun onTapAddMarker(mapLocation: LatLng) {
+        mapsActivity.addMarker(LatLng(mapLocation.latitude, mapLocation.longitude))
+    }
+
+    override fun onSetBackgroundAlarm() {
+
+    }
 
 }
