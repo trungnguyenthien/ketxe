@@ -16,10 +16,14 @@ interface HomePresenter {
     fun onTapMyLocation()
     fun onTapAddMarker(mapLocation: LatLng)
     fun onSetBackgroundAlarm()
+    fun onTapClickAddAddressButton()
+    fun onSubmitAddress(addressName: String, location: LatLng)
 }
 
 class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
+    private var addressService: AddressDataService = AddressDataServiceImpl()
+
     override fun onTapMyLocation() {
         myLocService.request(mapsActivity,
             onStart = {
@@ -37,6 +41,14 @@ class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
 
     override fun onSetBackgroundAlarm() {
 
+    }
+
+    override fun onTapClickAddAddressButton() {
+        mapsActivity.showInputAddressName()
+    }
+
+    override fun onSubmitAddress(addressName: String, location: LatLng) {
+//        TODO("Not yet implemented")
     }
 
 }

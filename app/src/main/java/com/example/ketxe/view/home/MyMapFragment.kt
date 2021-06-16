@@ -1,12 +1,10 @@
 package com.example.ketxe.view.home
 
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import butterknife.BindView
 import com.example.ketxe.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -21,12 +19,17 @@ class MyMapFragment : Fragment() {
 
     var onClickAddMarkerButton: (() -> Unit)? = null
     var onClickMyLocationButton: (() -> Unit)? = null
+    var onClickAddAddressButton: (() -> Unit)? = null
     private val addMarkerButton: FloatingActionButton by lazy {
-        view!!.findViewById(R.id.fab)
+        view!!.findViewById(R.id.add_marker)
     }
 
     private val myLocationButton: FloatingActionButton by lazy {
-        view!!.findViewById(R.id.fab2)
+        view!!.findViewById(R.id.my_location_button)
+    }
+
+    private val addAddressButton: FloatingActionButton by lazy {
+        view!!.findViewById(R.id.add_address_button)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -36,22 +39,29 @@ class MyMapFragment : Fragment() {
             ggMap = it
 
             val sydney = LatLng(-34.0, 151.0)
-            ggMap?.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+            addMarker(lat = sydney.latitude, lon = sydney.longitude)
             ggMap?.moveCamera(CameraUpdateFactory.newLatLng(sydney))
 
             addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
             myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
+            addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
         }
         return view
     }
 
     fun centerLocation(): LatLng? = ggMap?.cameraPosition?.target
 
-    var currentMarker: Marker? = null
-    private fun addMarker(lat: Double, lon: Double) {
+    private var currentMarker: Marker? = null
+    private var currentMarkerLatLng: LatLng? = null
+    fun addMarker(lat: Double, lon: Double) {
         currentMarker?.remove()
-        val here = LatLng(lat, lon)
-        currentMarker = ggMap?.addMarker(MarkerOptions().position(here))
+        currentMarkerLatLng = LatLng(lat, lon)
+
+        currentMarker = ggMap?.addMarker(MarkerOptions().position(currentMarkerLatLng))
+    }
+
+    fun currentMarkerLocation(): LatLng? {
+        return currentMarkerLatLng
     }
 }
 

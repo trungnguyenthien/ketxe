@@ -1,21 +1,21 @@
 package com.example.ketxe
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 
 
 class MapsActivity : AppCompatActivity() {
@@ -46,7 +46,6 @@ class MapsActivity : AppCompatActivity() {
         // Show menu button at left navigationBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         replaceFragment(ggMyMapFragment)
 
         ggMyMapFragment.onClickAddMarkerButton = {
@@ -58,10 +57,14 @@ class MapsActivity : AppCompatActivity() {
         ggMyMapFragment.onClickMyLocationButton = {
             presenter.onTapMyLocation()
         }
+
+        ggMyMapFragment.onClickAddAddressButton = {
+            presenter.onTapClickAddAddressButton()
+        }
     }
 
     fun addMarker(latlon: LatLng) {
-
+        ggMyMapFragment.addMarker(lat = latlon.latitude, lon = latlon.longitude)
     }
 
     fun moveMapCamera(latlon: LatLng) {
@@ -94,6 +97,26 @@ class MapsActivity : AppCompatActivity() {
 
     fun hideLoadingIndicator() {
 //        TODO("Not yet implemented")
+    }
+
+    fun showInputAddressName() {
+//        TODO("Not yet implemented")
+
+        val taskEditText = EditText(this)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Giải pháp tránh Kẹt xe")
+            .setMessage("Nhập tên địa điểm này:")
+            .setView(taskEditText)
+            .setPositiveButton("Hoàn tất") { _, _ ->
+                ggMyMapFragment.currentMarkerLocation()?.let {
+                    val addressName = taskEditText.text.toString()
+                    presenter.onSubmitAddress(addressName = addressName, location = it)
+                }
+
+            }
+            .setNegativeButton("Từ chối", null)
+            .create()
+        dialog.show()
     }
 }
 
