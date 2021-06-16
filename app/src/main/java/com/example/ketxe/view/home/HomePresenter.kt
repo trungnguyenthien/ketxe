@@ -27,7 +27,7 @@ class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
     override fun onTapMyLocation() {
         myLocService.request(mapsActivity,
             onStart = {
-                mapsActivity.showLoadingIndicator()
+                mapsActivity.showLoadingIndicator(message = "Chờ chút nha, mình đang dò tìm location của bạn...")
             }, onStop = {
                 mapsActivity.hideLoadingIndicator()
             }, onSuccess = {

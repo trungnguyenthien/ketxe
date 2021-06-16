@@ -1,12 +1,11 @@
 package com.example.ketxe
 
-import android.content.DialogInterface
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
+import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -14,7 +13,10 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
-import com.example.ketxe.view.home.*
+import com.example.ketxe.view.home.HomePresenter
+import com.example.ketxe.view.home.HomePresenterImpl
+import com.example.ketxe.view.home.MyMapFragment
+import com.example.ketxe.view.home.moveCamera
 import com.google.android.gms.maps.model.LatLng
 
 
@@ -27,12 +29,18 @@ class MapsActivity : AppCompatActivity() {
         findViewById(R.id.my_drawer_layout)
     }
 
-    private val navigationViewHolder: NavigationViewHolder by lazy {
-        NavigationViewHolder(findViewById(R.id.custom_nav_view))
+    private val loadingLayout: RelativeLayout by lazy {
+        findViewById(R.id.loading_layout)
     }
+
+    private val loadingText: TextView by lazy {
+        findViewById(R.id.loading_text)
+    }
+
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +69,8 @@ class MapsActivity : AppCompatActivity() {
         ggMyMapFragment.onClickAddAddressButton = {
             presenter.onTapClickAddAddressButton()
         }
+
+        hideLoadingIndicator()
     }
 
     fun addMarker(latlon: LatLng) {
@@ -91,12 +101,14 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    fun showLoadingIndicator() {
-//        TODO("Not yet implemented")
+    fun showLoadingIndicator(message: String) {
+        loadingText.text = message
+        loadingLayout.visibility = View.VISIBLE
     }
 
     fun hideLoadingIndicator() {
-//        TODO("Not yet implemented")
+        loadingText.text = ""
+        loadingLayout.visibility = View.INVISIBLE
     }
 
     fun showInputAddressName() {
