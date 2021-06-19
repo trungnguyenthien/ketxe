@@ -22,7 +22,7 @@ interface HomePresenter {
 
 class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
-    private var addressService: AddressDataService = AddressDataServiceImpl()
+    private var addressService: AddressDataService = DBService()
 
     override fun onTapMyLocation() {
         myLocService.request(mapsActivity,
@@ -49,6 +49,11 @@ class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
 
     override fun onSubmitAddress(addressName: String, location: LatLng) {
 //        TODO("Not yet implemented")
+        addressService.save(
+            name = addressName,
+            latitude = location.latitude,
+            longitude = location.longitude
+        )
     }
 
 }
