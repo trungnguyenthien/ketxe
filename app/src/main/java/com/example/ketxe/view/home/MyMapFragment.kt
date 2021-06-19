@@ -21,15 +21,15 @@ class MyMapFragment : Fragment() {
     var onClickMyLocationButton: (() -> Unit)? = null
     var onClickAddAddressButton: (() -> Unit)? = null
     private val addMarkerButton: FloatingActionButton by lazy {
-        view!!.findViewById(R.id.add_marker)
+        view!!.findViewById<FloatingActionButton>(R.id.add_marker)
     }
 
     private val myLocationButton: FloatingActionButton by lazy {
-        view!!.findViewById(R.id.my_location_button)
+        view!!.findViewById<FloatingActionButton>(R.id.my_location_button)
     }
 
     private val addAddressButton: FloatingActionButton by lazy {
-        view!!.findViewById(R.id.add_address_button)
+        view!!.findViewById<FloatingActionButton>(R.id.add_address_button)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

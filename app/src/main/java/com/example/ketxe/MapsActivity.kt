@@ -13,11 +13,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
-import com.example.ketxe.view.home.HomePresenter
-import com.example.ketxe.view.home.HomePresenterImpl
-import com.example.ketxe.view.home.MyMapFragment
-import com.example.ketxe.view.home.moveCamera
+import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
+import io.realm.Realm
 
 
 class MapsActivity : AppCompatActivity() {
@@ -26,15 +24,15 @@ class MapsActivity : AppCompatActivity() {
     private val presenter: HomePresenter = HomePresenterImpl(this)
 
     private val drawerLayout: DrawerLayout by lazy {
-        findViewById(R.id.my_drawer_layout)
+        findViewById<DrawerLayout>(R.id.my_drawer_layout)
     }
 
     private val loadingLayout: RelativeLayout by lazy {
-        findViewById(R.id.loading_layout)
+        findViewById<RelativeLayout>(R.id.loading_layout)
     }
 
     private val loadingText: TextView by lazy {
-        findViewById(R.id.loading_text)
+        findViewById<TextView>(R.id.loading_text)
     }
 
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
@@ -45,7 +43,6 @@ class MapsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         requestTrafficPermission(activity = this, code = 4366)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -133,8 +130,8 @@ class MapsActivity : AppCompatActivity() {
 }
 
 class NavigationViewHolder(root: View) {
-    val addButton: Button by lazy { root.findViewById(R.id.button1) }
-    val listView: RecyclerView by lazy { root.findViewById(R.id.listview) }
+    val addButton: Button by lazy { root.findViewById<Button>(R.id.button1) }
+    val listView: RecyclerView by lazy { root.findViewById<RecyclerView>(R.id.listview) }
 
     class MyViewHolder(root: View) : RecyclerView.ViewHolder(root) {
 

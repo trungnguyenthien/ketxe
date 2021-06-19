@@ -9,8 +9,5 @@ fun toJson(address: Address): String {
 }
 
 interface AddressDataService {
-
-}
-
-class AddressDataServiceImpl: AddressDataService {
+    fun save(name: String, latitude: Double, longitude: Double)
 }
