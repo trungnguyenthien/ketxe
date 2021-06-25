@@ -12,11 +12,10 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:text="Them Thong Bao"
         />
-    <view class="androidx.recyclerview.widget.RecyclerView"
+    <view class="com.example.ketxe.view.home.AddressList"
         android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
     </view>
 
 

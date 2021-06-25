@@ -1,5 +1,6 @@
 package com.example.ketxe
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.MenuItem
@@ -15,10 +16,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.navigation.NavigationView
 import io.realm.Realm
 
 
-class MapsActivity : AppCompatActivity() {
+class MapsActivity : AppCompatActivity(), HomeView {
     private lateinit var binding: ActivityMapsBinding
 
     private val presenter: HomePresenter = HomePresenterImpl(this)
@@ -39,7 +41,13 @@ class MapsActivity : AppCompatActivity() {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
 
+    private val navigationView: NavigationView by lazy {
+        findViewById<NavigationView>(R.id.custom_nav_view)
+    }
 
+    private val addressList: AddressList by lazy {
+        navigationView.findViewById<AddressList>(R.id.listview)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,12 +78,24 @@ class MapsActivity : AppCompatActivity() {
         hideLoadingIndicator()
     }
 
-    fun addMarker(latlon: LatLng) {
+    var onResumeCount = 0
+    override fun onResume() {
+        super.onResume()
+        presenter.onResume(onResumeCount++)
+    }
+
+    override fun activity(): Activity = this
+
+    override fun addMarker(latlon: LatLng) {
         ggMyMapFragment.addMarker(lat = latlon.latitude, lon = latlon.longitude)
     }
 
-    fun moveMapCamera(latlon: LatLng) {
+    override fun moveMapCamera(latlon: LatLng) {
         ggMyMapFragment.ggMap?.moveCamera(lat = latlon.latitude, lon = latlon.longitude, zoom = 17.0, animated = true)
+    }
+
+    override fun updateAddressList(list: List<Address>) {
+        addressList.reloadData(list)
     }
 
     private val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
@@ -98,19 +118,17 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    fun showLoadingIndicator(message: String) {
+    override fun showLoadingIndicator(message: String) {
         loadingText.text = message
         loadingLayout.visibility = View.VISIBLE
     }
 
-    fun hideLoadingIndicator() {
+    override fun hideLoadingIndicator() {
         loadingText.text = ""
         loadingLayout.visibility = View.INVISIBLE
     }
 
-    fun showInputAddressName() {
-//        TODO("Not yet implemented")
-
+    override fun showInputAddressName() {
         val taskEditText = EditText(this)
         val dialog = AlertDialog.Builder(this)
             .setTitle("Giải pháp tránh Kẹt xe")

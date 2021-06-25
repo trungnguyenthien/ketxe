@@ -1,8 +1,9 @@
 package com.example.ketxe.view.home
 
-import android.location.Location
-import com.example.ketxe.MapsActivity
+import android.app.Activity
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 interface ActivityPresenter {
     fun onStart()
@@ -12,7 +13,7 @@ interface ActivityPresenter {
     fun onDestroyBySystem()
 }
 
-interface HomePresenter {
+interface HomePresenter: ActivityPresenter {
     fun onTapMyLocation()
     fun onTapAddMarker(mapLocation: LatLng)
     fun onSetBackgroundAlarm()
@@ -20,23 +21,34 @@ interface HomePresenter {
     fun onSubmitAddress(addressName: String, location: LatLng)
 }
 
-class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
+interface HomeView {
+    fun activity(): Activity
+    fun addMarker(latlon: LatLng)
+    fun showInputAddressName()
+    fun showLoadingIndicator(message: String)
+    fun hideLoadingIndicator()
+    fun moveMapCamera(latlon: LatLng)
+    abstract fun updateAddressList(list: List<Address>)
+}
+
+class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
-    private var addressService: AddressDataService = DBService()
+    private var dbService: DataService = RealmDBService()
 
     override fun onTapMyLocation() {
-        myLocService.request(mapsActivity,
+        myLocService.request(view.activity(),
             onStart = {
-                mapsActivity.showLoadingIndicator(message = "Chờ chút nha, mình đang dò tìm location của bạn...")
+                view.showLoadingIndicator(message = "Chờ chút nha, mình đang dò tìm location của bạn...")
             }, onStop = {
-                mapsActivity.hideLoadingIndicator()
+                view.hideLoadingIndicator()
             }, onSuccess = {
-                mapsActivity.moveMapCamera(LatLng(it.latitude, it.longitude))
-            })
+                view.moveMapCamera(LatLng(it.latitude, it.longitude))
+            }
+        )
     }
 
     override fun onTapAddMarker(mapLocation: LatLng) {
-        mapsActivity.addMarker(LatLng(mapLocation.latitude, mapLocation.longitude))
+        view.addMarker(LatLng(mapLocation.latitude, mapLocation.longitude))
     }
 
     override fun onSetBackgroundAlarm() {
@@ -44,16 +56,46 @@ class HomePresenterImpl(val mapsActivity: MapsActivity) : HomePresenter {
     }
 
     override fun onTapClickAddAddressButton() {
-        mapsActivity.showInputAddressName()
+        view.showInputAddressName()
     }
 
     override fun onSubmitAddress(addressName: String, location: LatLng) {
-//        TODO("Not yet implemented")
-        addressService.save(
-            name = addressName,
-            latitude = location.latitude,
-            longitude = location.longitude
-        )
+        dbService.saveAddress(Address(
+            null,
+            addressName,
+            location.latitude.toFloat(),
+            location.longitude.toFloat()
+        ) ,completion = { onSaveAddressCompletion() })
     }
 
+    override fun onStart() {
+//        TODO("Not yet implemented")
+    }
+
+    override fun onResume(time: Int) {
+//        TODO("Not yet implemented")
+//        dbService.getAllAddress { list ->
+//            view.updateAddressList(list)
+//        }
+
+    }
+
+    override fun onPause(time: Int) {
+//        TODO("Not yet implemented")
+    }
+
+    override fun onNoLongerVisible() {
+//        TODO("Not yet implemented")
+    }
+
+    override fun onDestroyBySystem() {
+//        TODO("Not yet implemented")
+    }
+
+    private fun onSaveAddressCompletion() = runBlocking {
+        delay(100)
+        dbService.getAllAddress {
+            view.updateAddressList(it)
+        }
+    }
 }
