@@ -28,7 +28,7 @@ interface HomeView {
     fun showLoadingIndicator(message: String)
     fun hideLoadingIndicator()
     fun moveMapCamera(latlon: LatLng)
-    abstract fun updateAddressList(list: List<Address>)
+    fun updateAddressList(list: List<Address>)
 }
 
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
@@ -74,9 +74,9 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     override fun onResume(time: Int) {
 //        TODO("Not yet implemented")
-//        dbService.getAllAddress { list ->
-//            view.updateAddressList(list)
-//        }
+        dbService.getAllAddress { list ->
+            view.updateAddressList(list)
+        }
 
     }
 

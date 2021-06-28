@@ -28,10 +28,3 @@ class PermissionRequester(
     }
 }
 
-fun requestTrafficPermission(activity: Activity, code: Int) {
-    PermissionRequester(
-        activity = activity,
-        permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-        requestCode = code
-    ).requestIfNeed()
-}

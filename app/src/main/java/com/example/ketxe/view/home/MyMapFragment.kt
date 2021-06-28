@@ -64,18 +64,3 @@ class MyMapFragment : Fragment() {
         return currentMarkerLatLng
     }
 }
-
-fun GoogleMap.moveCamera(
-    lat: Double,
-    lon: Double,
-    zoom: Double = 15.0,
-    animated: Boolean = true
-) {
-    val loc = LatLng(lat, lon)
-    val cameraUpdate = CameraUpdateFactory.newLatLngZoom(loc, zoom.toFloat())
-    if (animated) {
-        this.animateCamera(cameraUpdate)
-    } else {
-        this.moveCamera(cameraUpdate)
-    }
-}

@@ -38,8 +38,8 @@ open class RealmDBService: DataService {
                 }
             }
             it.insert(list)
-            completion.invoke()
         }
+        completion.invoke()
     }
 
     override fun deleteAddress(addressId: String, completion: () -> Unit) {
@@ -48,8 +48,8 @@ open class RealmDBService: DataService {
                 .equalTo("id", addressId)
                 .findAll()
             list.deleteAllFromRealm()
-            completion.invoke()
         }
+        completion.invoke()
     }
 
     override fun deleteStuck(addressId: String, completion: () -> Unit) {
@@ -58,8 +58,8 @@ open class RealmDBService: DataService {
                 .equalTo("addressId", addressId)
                 .findAll()
             list.deleteAllFromRealm()
-            completion.invoke()
         }
+        completion.invoke()
     }
 
     override fun getAllAddress(completion: (List<Address>) -> Unit) {

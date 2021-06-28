@@ -1,5 +1,6 @@
 package com.example.ketxe
 
+import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
 import android.os.Bundle
@@ -15,6 +16,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.navigation.NavigationView
 import io.realm.Realm
@@ -41,12 +44,20 @@ class MapsActivity : AppCompatActivity(), HomeView {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
 
-    private val navigationView: NavigationView by lazy {
-        findViewById<NavigationView>(R.id.custom_nav_view)
+    private val customAdapter: AddressList.Adapter by lazy {
+        var _adapter = AddressList.Adapter(this)
+        this.addressList.adapter = _adapter
+        return@lazy _adapter
+    }
+
+    private fun reloadData(list: List<Address>) {
+//        runOnUiThread {
+            customAdapter.update(list)
+//        }
     }
 
     private val addressList: AddressList by lazy {
-        navigationView.findViewById<AddressList>(R.id.listview)
+        findViewById<AddressList>(R.id.listview)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,11 +102,11 @@ class MapsActivity : AppCompatActivity(), HomeView {
     }
 
     override fun moveMapCamera(latlon: LatLng) {
-        ggMyMapFragment.ggMap?.moveCamera(lat = latlon.latitude, lon = latlon.longitude, zoom = 17.0, animated = true)
+        ggMyMapFragment.ggMap?.moveCamera(latlon.latitude, latlon.longitude, 17.0, true)
     }
 
     override fun updateAddressList(list: List<Address>) {
-        addressList.reloadData(list)
+        reloadData(list)
     }
 
     private val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
@@ -147,33 +158,25 @@ class MapsActivity : AppCompatActivity(), HomeView {
     }
 }
 
-class NavigationViewHolder(root: View) {
-    val addButton: Button by lazy { root.findViewById<Button>(R.id.button1) }
-    val listView: RecyclerView by lazy { root.findViewById<RecyclerView>(R.id.listview) }
-
-    class MyViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-
-    }
-
-    class Adapter : RecyclerView.Adapter<MyViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-            TODO("Not yet implemented")
-        }
-
-        override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            TODO("Not yet implemented")
-        }
-
-        override fun getItemCount(): Int {
-            TODO("Not yet implemented")
-        }
-
-
-    }
-
-
-    init {
-//        listView.adapter
-    }
+fun requestTrafficPermission(activity: Activity, code: Int) {
+    PermissionRequester(
+        activity = activity,
+        permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+        requestCode = code
+    ).requestIfNeed()
 }
 
+fun GoogleMap.moveCamera(
+    lat: Double,
+    lon: Double,
+    zoom: Double = 15.0,
+    animated: Boolean = true
+) {
+    val loc = LatLng(lat, lon)
+    val cameraUpdate = CameraUpdateFactory.newLatLngZoom(loc, zoom.toFloat())
+    if (animated) {
+        this.animateCamera(cameraUpdate)
+    } else {
+        this.moveCamera(cameraUpdate)
+    }
+}
