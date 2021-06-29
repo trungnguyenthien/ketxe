@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.*
@@ -47,6 +48,7 @@ class MapsActivity : AppCompatActivity(), HomeView {
     private val customAdapter: AddressList.Adapter by lazy {
         var _adapter = AddressList.Adapter(this)
         this.addressList.adapter = _adapter
+        this.addressList.layoutManager = LinearLayoutManager(this)
         return@lazy _adapter
     }
 
