@@ -19,6 +19,7 @@ interface HomePresenter: ActivityPresenter {
     fun onSetBackgroundAlarm()
     fun onTapClickAddAddressButton()
     fun onSubmitAddress(addressName: String, location: LatLng)
+    fun onDelete(address: Address)
 }
 
 interface HomeView {
@@ -66,6 +67,18 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             location.latitude.toFloat(),
             location.longitude.toFloat()
         ) ,completion = { onSaveAddressCompletion() })
+    }
+
+    override fun onDelete(address: Address) {
+//        TODO("Not yet implemented")
+        address.id?.let { id ->
+            dbService.deleteAddress(addressId = id, completion = {
+                dbService.getAllAddress {
+                    view.updateAddressList(it)
+                }
+            })
+        }
+
     }
 
     override fun onStart() {

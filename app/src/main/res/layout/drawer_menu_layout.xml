@@ -14,7 +14,6 @@
 <!--        />-->
     <view class="com.example.ketxe.view.home.AddressList"
         android:id="@+id/listview"
-        android:background="@color/design_default_color_secondary"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </view>

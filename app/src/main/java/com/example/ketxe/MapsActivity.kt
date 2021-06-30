@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
@@ -24,7 +26,8 @@ import com.google.android.material.navigation.NavigationView
 import io.realm.Realm
 
 
-class MapsActivity : AppCompatActivity(), HomeView {
+class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchListener {
+
     private lateinit var binding: ActivityMapsBinding
 
     private val presenter: HomePresenter = HomePresenterImpl(this)
@@ -46,10 +49,17 @@ class MapsActivity : AppCompatActivity(), HomeView {
     }
 
     private val customAdapter: AddressList.Adapter by lazy {
-        var _adapter = AddressList.Adapter(this)
-        this.addressList.adapter = _adapter
-        this.addressList.layoutManager = LinearLayoutManager(this)
-        return@lazy _adapter
+        var adapter = AddressList.Adapter(this)
+        addressList.adapter = adapter
+        addressList.layoutManager = LinearLayoutManager(this)
+        addressList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
+        addressList.addOnItemTouchListener(this)
+        adapter.onDeleteItem = { onDelete(it) }
+        return@lazy adapter
+    }
+
+    private fun onDelete(address: Address): Unit {
+        presenter.onDelete(address = address)
     }
 
     private fun reloadData(list: List<Address>) {
@@ -157,6 +167,19 @@ class MapsActivity : AppCompatActivity(), HomeView {
             .setNegativeButton("Từ chối", null)
             .create()
         dialog.show()
+    }
+
+    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+//        TODO("Not yet implemented")
+        return false
+    }
+
+    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
+//        TODO("Not yet implemented")
+    }
+
+    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
+//        TODO("Not yet implemented")
     }
 }
 
