@@ -102,7 +102,13 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         }
 
         hideLoadingIndicator()
-        MyJobService.startJob(this)
+        startServiceIfNeed()
+    }
+
+    private fun startServiceIfNeed() {
+        if(isGranted(Manifest.permission.FOREGROUND_SERVICE)) {
+            MyJobService.startJob(this)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -111,7 +117,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        MyJobService.startJob(this)
+        startServiceIfNeed()
     }
 
     var onResumeCount = 0

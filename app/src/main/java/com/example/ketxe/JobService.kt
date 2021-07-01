@@ -28,17 +28,11 @@ fun log(msg: String) {
 }
 
 class MyJobService: Service() {
-    var onJob = true
-
+    var onJob = false
 
     private fun job() {
-        val db = RealmDBService()
         while (onJob) {
             log("=========================")
-
-//            db.printPreviousLog()
-//            db.saveLog("hai")
-//            delay(10 * 1000)
             Thread.sleep(10 * 1000)
         }
     }
@@ -55,15 +49,20 @@ class MyJobService: Service() {
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
         startForeground(101, notification)
-
-        Thread {
-            job()
-        }.start()
-//        runBlocking {
-//            job()
-//        }
-
         return START_NOT_STICKY
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        if (!onJob) {
+            Thread { job() }.start()
+            onJob = true
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        onJob = false
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -74,19 +73,6 @@ class MyJobService: Service() {
         fun startJob(context: Context) {
             val myServiceIntent = Intent(context, MyJobService::class.java)
             ContextCompat.startForegroundService(context, myServiceIntent)
-            /*
-            val serviceComponent = ComponentName(context, MyJobService::class.java)
-            val jobInfo = JobInfo.Builder(jobId, serviceComponent)
-                .setMinimumLatency(1 * 1000)
-                .setOverrideDeadline(3 * 1000)
-//                .setRequiresCharging(true)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                .setPersisted(true)
-//                .setPeriodic(60 * 1000)
-                .build()
-            val jobScheduler: JobScheduler = context.getSystemService(JobScheduler::class.java)
-            jobScheduler.schedule(jobInfo)
-             */
         }
 
         //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
@@ -99,11 +85,6 @@ class MyJobService: Service() {
             val service = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             service.createNotificationChannel(chan)
             return channelId
-        }
-
-        fun stopJob(context: Context) {
-            val jobScheduler: JobScheduler = context.getSystemService(JobScheduler::class.java)
-            jobScheduler.cancel(jobId)
         }
     }
 }
