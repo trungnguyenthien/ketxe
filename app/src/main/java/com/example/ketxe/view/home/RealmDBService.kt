@@ -2,13 +2,12 @@ package com.example.ketxe.view.home
 
 import android.app.Application
 import android.content.Context
+import com.example.ketxe.MyJobService
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
-import io.realm.kotlin.executeTransactionAwait
 import io.realm.kotlin.where
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 open class RealmDBService: DataService {
@@ -80,6 +79,32 @@ open class RealmDBService: DataService {
             completion.invoke(list)
         }
     }
+
+    fun printPreviousLog() {
+        realm?.executeTransaction { realm ->
+            val size = realm.where<Log>().alwaysTrue().findAll().size
+            if(size == 0) {
+                return@executeTransaction
+            }
+            realm.where<Log>().alwaysTrue().findAll().takeLast(1).last()?.let {
+                android.util.Log.w("com.example.ketxe.view.home.RealmDBService", "--- PreviousLog At = ${it.time}")
+//                log("--- PreviousLog At = ${it.time}")
+            }
+        }
+    }
+
+    fun saveLog(msg: String) {
+        realm?.executeTransaction { realm ->
+            val log = Log()
+            log.message = msg
+            realm.insert(log)
+        }
+    }
+}
+
+open class Log: RealmObject() {
+    var time: Date = Date()
+    var message: String = ""
 }
 
 open class DbAddress : RealmObject() {

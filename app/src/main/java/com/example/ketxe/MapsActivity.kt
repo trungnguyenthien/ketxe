@@ -3,12 +3,14 @@ package com.example.ketxe
 import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -72,6 +74,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         findViewById<AddressList>(R.id.listview)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestTrafficPermission(activity = this, code = 4366)
@@ -99,6 +102,16 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         }
 
         hideLoadingIndicator()
+        MyJobService.startJob(this)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        MyJobService.startJob(this)
     }
 
     var onResumeCount = 0
@@ -186,7 +199,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
 fun requestTrafficPermission(activity: Activity, code: Int) {
     PermissionRequester(
         activity = activity,
-        permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+        permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.FOREGROUND_SERVICE),
         requestCode = code
     ).requestIfNeed()
 }

@@ -1,0 +1,109 @@
+package com.example.ketxe
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.app.job.JobScheduler
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import com.example.ketxe.view.home.RealmDBService
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+
+//https://medium.com/@jayd1992/foreground-services-in-android-e131a863a33d
+//https://github.com/jeetdholakia/ServicesAndBackgroundTasks/blob/master/app/src/main/java/dev/jeetdholakia/servicesandbackgroundtasks/foregroundservices/MyForegroundService.kt
+
+private val TAG = "com.example.ketxe.view.home.RealmDBService"
+
+fun log(msg: String) {
+    Log.w(TAG, msg)
+}
+
+class MyJobService: Service() {
+    var onJob = true
+
+
+    private fun job() {
+        val db = RealmDBService()
+        while (onJob) {
+            log("=========================")
+
+//            db.printPreviousLog()
+//            db.saveLog("hai")
+//            delay(10 * 1000)
+            Thread.sleep(10 * 1000)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val channelId = createNotificationChannel(this, "channelID", "channelName")
+        val notificationBuilder = NotificationCompat.Builder(this, channelId )
+        val notification = notificationBuilder.setOngoing(true)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Background Service")
+            .setContentText("Xin chao")
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+        startForeground(101, notification)
+
+        Thread {
+            job()
+        }.start()
+//        runBlocking {
+//            job()
+//        }
+
+        return START_NOT_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    companion object {
+        private const val jobId: Int = 33435
+
+        fun startJob(context: Context) {
+            val myServiceIntent = Intent(context, MyJobService::class.java)
+            ContextCompat.startForegroundService(context, myServiceIntent)
+            /*
+            val serviceComponent = ComponentName(context, MyJobService::class.java)
+            val jobInfo = JobInfo.Builder(jobId, serviceComponent)
+                .setMinimumLatency(1 * 1000)
+                .setOverrideDeadline(3 * 1000)
+//                .setRequiresCharging(true)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                .setPersisted(true)
+//                .setPeriodic(60 * 1000)
+                .build()
+            val jobScheduler: JobScheduler = context.getSystemService(JobScheduler::class.java)
+            jobScheduler.schedule(jobInfo)
+             */
+        }
+
+        //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
+        @RequiresApi(Build.VERSION_CODES.O)
+        private fun createNotificationChannel(context: Context, channelId: String, channelName: String): String{
+            val chan = NotificationChannel(channelId,
+                channelName, NotificationManager.IMPORTANCE_NONE)
+            chan.lightColor = Color.BLUE
+            chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+            val service = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            service.createNotificationChannel(chan)
+            return channelId
+        }
+
+        fun stopJob(context: Context) {
+            val jobScheduler: JobScheduler = context.getSystemService(JobScheduler::class.java)
+            jobScheduler.cancel(jobId)
+        }
+    }
+}
