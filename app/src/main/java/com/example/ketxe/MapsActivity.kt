@@ -3,6 +3,8 @@ package com.example.ketxe
 import android.Manifest
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
@@ -14,6 +16,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -26,6 +29,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.navigation.NavigationView
 import io.realm.Realm
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 
 class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchListener {
@@ -76,6 +81,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestTrafficPermission(activity = this, code = 4366)
+
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         drawerLayout.addDrawerListener(actionBarDrawerToggle)
@@ -97,6 +103,13 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
 
         ggMyMapFragment.onClickAddAddressButton = {
             presenter.onTapClickAddAddressButton()
+        }
+
+        var addressFromNotif = intent.extras?.get("address") as? String
+        addressFromNotif?.let {
+            val lat = intent.extras?.get("lat") as Float
+            val lon = intent.extras?.get("lon") as Float
+            ggMyMapFragment.setInitalizeMarker(lat = lat, lon = lon)
         }
 
         hideLoadingIndicator()
@@ -138,7 +151,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         reloadData(list)
     }
 
-    private val ggMyMapFragment: com.example.ketxe.view.home.MyMapFragment by lazy {
+    private val ggMyMapFragment: MyMapFragment by lazy {
         MyMapFragment()
     }
 
@@ -214,4 +227,8 @@ fun GoogleMap.moveCamera(
     } else {
         this.moveCamera(cameraUpdate)
     }
+}
+
+fun Context.isGranted(permission: String): Boolean {
+    return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
 }

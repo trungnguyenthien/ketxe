@@ -90,6 +90,8 @@ class FetchResultJob(val context: Context) {
 
         val intent = Intent(context, MapsActivity::class.java).apply {
             this.putExtra("address", address.id)
+            this.putExtra("lat", address.lat)
+            this.putExtra("lon", address.lon)
         }
         val pi = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         mBuilder.setContentIntent(pi)

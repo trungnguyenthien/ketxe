@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.ketxe.R
+import com.example.ketxe.moveCamera
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -38,10 +39,9 @@ class MyMapFragment : Fragment() {
         supportMapFragment.getMapAsync {
             ggMap = it
 
-            val sydney = LatLng(-34.0, 151.0)
+            val sydney = LatLng(initLat, initLon)
             addMarker(lat = sydney.latitude, lon = sydney.longitude)
-            ggMap?.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-
+            ggMap?.moveCamera(initLat, initLon, 13.0, true)
             addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
             myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
             addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
@@ -62,5 +62,12 @@ class MyMapFragment : Fragment() {
 
     fun currentMarkerLocation(): LatLng? {
         return currentMarkerLatLng
+    }
+
+    var initLat: Double = -34.0
+    var initLon: Double = 151.0
+    fun setInitalizeMarker(lat: Float, lon: Float): Unit {
+        initLat = lat.toDouble()
+        initLon = lon.toDouble()
     }
 }
