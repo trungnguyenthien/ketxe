@@ -30,11 +30,13 @@ interface HomeView {
     fun showLoadingIndicator(message: String)
     fun hideLoadingIndicator()
     fun moveMapCamera(latlon: LatLng)
-    fun updateAddressList(list: List<Address>)
+    fun updateAddressList(list: List<HomeAddressRow>)
     fun clearAllStuckMarkers()
     fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>)
     fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>)
 }
+
+data class HomeAddressRow(val address: Address, val serious: Int, val noSerious: Int)
 
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
@@ -76,12 +78,11 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onDelete(address: Address) {
         address.id?.let { id ->
             dbService.deleteAddress(addressId = id, completion = {
-                dbService.getAllAddress {
+                loadAddressRow {
                     view.updateAddressList(it)
                 }
             })
         }
-
     }
 
     override fun didOpenFromNotification(addressId: String) {
@@ -100,10 +101,26 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     override fun onResume(time: Int) {
 //        TODO("Not yet implemented")
-        dbService.getAllAddress { list ->
-            view.updateAddressList(list)
+        loadAddressRow {
+            view.updateAddressList(it)
         }
+    }
 
+    private fun loadAddressRow(completion: (List<HomeAddressRow>) -> Unit) {
+        var rows = ArrayList<HomeAddressRow>()
+        dbService.getAllAddress { list -> list.forEach { address ->
+            val addressId = address.id ?: ""
+            val isLastAddress = address == list.last()
+
+            dbService.getLastestStuck(addressId = addressId, completion = { stucks ->
+                val serious = stucks.filter { it.severity == StuckSeverity.Serious }.size
+                val noSerious = stucks.filter { it.severity != StuckSeverity.Serious }.size
+                val row = HomeAddressRow(address, serious, noSerious)
+                rows.add(row)
+
+                if(isLastAddress) { completion.invoke(rows) }
+            })
+        }}
     }
 
     override fun onPause(time: Int) {
@@ -120,7 +137,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     private fun onSaveAddressCompletion() = runBlocking {
         delay(100)
-        dbService.getAllAddress {
+        loadAddressRow {
             view.updateAddressList(it)
         }
     }

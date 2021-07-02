@@ -12,19 +12,21 @@ import com.example.ketxe.R
 
 class AddressList(context: Context, attrs: AttributeSet?) : RecyclerView(context, attrs) {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val textView: TextView by lazy { itemView.findViewById<TextView>(R.id.address_text) }
+        private val addressText: TextView by lazy { itemView.findViewById<TextView>(R.id.address_text) }
+        private val infoText: TextView by lazy { itemView.findViewById<TextView>(R.id.info_text) }
         private val btnDelete: ImageButton by lazy { itemView.findViewById<ImageButton>(R.id.btn_remove_address) }
 
-        fun config(position: Int, item: Address, deleteAction: (Address) -> Unit) {
-            textView.text = item.description
+        fun config(position: Int, item: HomeAddressRow, deleteAction: (Address) -> Unit) {
+            addressText.text = item.address.description
+            infoText.text = "${item.serious} điểm kẹt xe, ${item.noSerious} điểm đông xe"
             btnDelete.setOnClickListener {
-                deleteAction.invoke(item)
+                deleteAction.invoke(item.address)
             }
         }
     }
 
     class Adapter(context: Context?) : RecyclerView.Adapter<ViewHolder>() {
-        private var data = ArrayList<Address>()
+        private var data = ArrayList<HomeAddressRow>()
         private val mInflater = LayoutInflater.from(context)
         var onDeleteItem: ((Address) -> Unit)? = null
 
@@ -43,7 +45,7 @@ class AddressList(context: Context, attrs: AttributeSet?) : RecyclerView(context
             return data.size
         }
 
-        fun update(data: List<Address>) {
+        fun update(data: List<HomeAddressRow>) {
             this.data.clear()
             this.data.addAll(data)
             this.notifyDataSetChanged()

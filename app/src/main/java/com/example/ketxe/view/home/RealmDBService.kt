@@ -63,7 +63,7 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
     }
 
     override fun getAllAddress(completion: (List<Address>) -> Unit) {
-        realm?.executeTransaction { realm ->
+        realm?.let { realm ->
             var list = realm.where<DbAddress>()
                 .alwaysTrue()
                 .findAll()
@@ -73,7 +73,7 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
     }
 
     override fun getLastestStuck(addressId: String, completion: (List<Stuck>) -> Unit) {
-        realm?.executeTransaction { realm ->
+        realm?.let { realm ->
             var list = realm.where<DbStuck>()
                 .equalTo("addressId", addressId)
                 .findAll().map { it.toEntity() }

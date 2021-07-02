@@ -69,7 +69,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         presenter.onDelete(address = address)
     }
 
-    private fun reloadData(list: List<Address>) {
+    private fun reloadData(list: List<HomeAddressRow>) {
         customAdapter.update(list)
     }
 
@@ -148,7 +148,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         ggMyMapFragment.ggMap?.moveCamera(latlon.latitude, latlon.longitude, 17.0, true)
     }
 
-    override fun updateAddressList(list: List<Address>) {
+    override fun updateAddressList(list: List<HomeAddressRow>) {
         reloadData(list)
     }
 
