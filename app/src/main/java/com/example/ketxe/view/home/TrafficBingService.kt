@@ -14,7 +14,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import kotlin.math.asin
 import kotlin.math.cos
-import kotlin.math.max
 
 
 interface TrafficBingService {
@@ -34,13 +33,13 @@ class TrafficBingServiceImpl: TrafficBingService {
                     return
                 }
 
-                response.body()?.let {
-                    completion(it.resourceSets[0].resources)
+                response.body()?.resourceSets?.first()?.let {
+                    completion(it.resources)
                 }
             }
 
             fun handle(errorCode: Int) {
-                completion(ArrayList<Resources>())
+                completion(emptyList())
             }
 
             override fun onFailure(call: Call<IncidentsResponse>, t: Throwable) {

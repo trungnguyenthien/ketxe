@@ -15,8 +15,25 @@ data class Stuck(
     val description: String,
     val latitude: Float,
     val longitude: Float,
-    val updateTime: Date = Date()
+    val updateTime: Date = Date(),
+    val severity: StuckSeverity
 )
+
+enum class StuckSeverity(val code: Int) {
+    LowImpact(1),
+    Minor(2),
+    Moderate(3),
+    Serious(4)
+}
+
+fun stuckSeverity(code: Int): StuckSeverity {
+    return when(code) {
+        1-> StuckSeverity.LowImpact
+        2 -> StuckSeverity.Minor
+        3 -> StuckSeverity.Moderate
+        else -> StuckSeverity.Serious
+    }
+}
 
 interface DataService {
     fun saveAddress(address: Address, completion: () -> Unit)
