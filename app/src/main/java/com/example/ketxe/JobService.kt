@@ -15,6 +15,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.example.ketxe.view.home.RealmDBService
+import io.realm.Realm
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -32,7 +33,9 @@ class MyJobService: Service() {
 
     private fun job() {
         while (onJob) {
-            log("=========================")
+            log("===============================")
+            val job = FetchResultJob()
+            job.run()
             Thread.sleep(10 * 1000)
         }
     }
@@ -68,7 +71,6 @@ class MyJobService: Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-        private const val jobId: Int = 33435
 
         fun startJob(context: Context) {
             val myServiceIntent = Intent(context, MyJobService::class.java)

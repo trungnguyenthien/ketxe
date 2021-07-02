@@ -1,8 +1,9 @@
 package com.example.ketxe.view.home
 
-import android.location.Location
 import com.example.ketxe.entity.IncidentsResponse
 import com.example.ketxe.entity.Resources
+import com.example.ketxe.log
+import com.google.android.gms.maps.model.LatLng
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -11,18 +12,22 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.max
 
 
 interface TrafficBingService {
-    fun request(location: Location, radius: Double, completion: (List<Resources>) -> UInt)
+    fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit)
 }
 
 class TrafficBingServiceImpl: TrafficBingService {
-    override fun request(location: Location, radius: Double, completion: (List<Resources>) -> UInt) {
+    override fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit) {
         val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
         val call = virtualearthAPI.incident(area.toString(), "3", bingKey)
         call.enqueue(object: Callback<IncidentsResponse> {
             override fun onResponse(call: Call<IncidentsResponse>, response: Response<IncidentsResponse>) {
+                log("Response = ${response.raw().toString()}")
                 if(!response.isSuccessful) {
                     handle(errorCode = response.code())
                     return
@@ -34,10 +39,13 @@ class TrafficBingServiceImpl: TrafficBingService {
             }
 
             fun handle(errorCode: Int) {
+//                log("handle(errorCode: $errorCode)")
                 completion(ArrayList<Resources>())
             }
 
             override fun onFailure(call: Call<IncidentsResponse>, t: Throwable) {
+
+                log("onFailure(${t.localizedMessage})")
                 handle(errorCode = -999)
             }
         })
@@ -49,26 +57,32 @@ fun makeBoundingBox(lat: Double, lon: Double, radInKm: Double): BoundingBox {
     val latitude: Double = lat
     val longitude: Double = lon
 
-    val radInMetter = radInKm * 1000
+    val radInMeter = radInKm * 1000
     val longitudeD =
-        Math.asin(radInMetter / (6378000 * Math.cos(Math.PI * latitude / 180))) * 180 / Math.PI
-    val latitudeD = Math.asin(radInMetter.toDouble() / 6378000.toDouble()) * 180 / Math.PI
+        asin(radInMeter / (6378000 * cos(Math.PI * latitude / 180))) * 180 / Math.PI
+    val latitudeD = asin(radInMeter.toDouble() / 6378000.toDouble()) * 180 / Math.PI
 
     val northLat = latitude + latitudeD // NorthLat
     val southLat = latitude - latitudeD // southLat
     val eastLong = longitude + longitudeD // EastLong
     val westLong = longitude - longitudeD // westLong
-    return BoundingBox(northLat, eastLong, southLat, westLong)
+
+    val maxLat = maxOf(northLat, southLat)
+    val minLat = minOf(northLat, southLat)
+    val maxLng = maxOf(eastLong, westLong)
+    val minLng = minOf(eastLong, westLong)
+
+    return BoundingBox(minLat, minLng, maxLat, maxLng)
 }
 
 
 data class BoundingBox(
-    val northLat: Double,
-    val eastLong: Double,
-    val southLat: Double,
-    val westLong: Double) {
+    val minLat: Double,
+    val minLng: Double,
+    val maxLat: Double,
+    val maxLng: Double) {
 
-    override fun toString(): String = "$southLat $westLong $northLat $eastLong"
+    override fun toString(): String = "$minLat,$minLng,$maxLat,$maxLng"
 }
 
 object RetrofitClient {
@@ -85,7 +99,7 @@ object RetrofitClient {
 }
 
 val virtualearthRetrofit = Retrofit.Builder()
-    .baseUrl("http://dev.virtualearth.net")
+    .baseUrl("https://dev.virtualearth.net")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
 

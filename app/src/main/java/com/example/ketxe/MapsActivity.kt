@@ -65,9 +65,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
     }
 
     private fun reloadData(list: List<Address>) {
-//        runOnUiThread {
-            customAdapter.update(list)
-//        }
+        customAdapter.update(list)
     }
 
     private val addressList: AddressList by lazy {
@@ -120,7 +118,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         startServiceIfNeed()
     }
 
-    var onResumeCount = 0
+    private var onResumeCount = 0
     override fun onResume() {
         super.onResume()
         presenter.onResume(onResumeCount++)
@@ -188,18 +186,11 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         dialog.show()
     }
 
-    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-//        TODO("Not yet implemented")
-        return false
-    }
+    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean = false
 
-    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
-//        TODO("Not yet implemented")
-    }
+    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
 
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
-//        TODO("Not yet implemented")
-    }
+    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
 }
 
 fun requestTrafficPermission(activity: Activity, code: Int) {

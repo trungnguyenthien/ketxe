@@ -10,7 +10,7 @@ import io.realm.annotations.PrimaryKey
 import io.realm.kotlin.where
 import java.util.*
 
-open class RealmDBService: DataService {
+open class RealmDBService(val realm: Realm? = globalRealm): DataService {
     override fun saveAddress(address: Address, completion: () -> Unit) {
         realm?.executeTransaction {
             val dto = DbAddress().apply {
@@ -83,6 +83,7 @@ open class RealmDBService: DataService {
     fun printPreviousLog() {
         realm?.executeTransaction { realm ->
             val size = realm.where<Log>().alwaysTrue().findAll().size
+            android.util.Log.w("com.example.ketxe.view.home.RealmDBService", "size = $size")
             if(size == 0) {
                 return@executeTransaction
             }
@@ -132,7 +133,7 @@ fun genId(): String {
     return id
 }
 
-var realm: Realm? = null
+var globalRealm: Realm? = null
 fun initRealm(context: Context) {
     Realm.init(context)
     val config = RealmConfiguration.Builder()
@@ -143,7 +144,7 @@ fun initRealm(context: Context) {
         .allowWritesOnUiThread(true)
         .build()
     Realm.setDefaultConfiguration(config)
-    realm = Realm.getDefaultInstance()
+    globalRealm = Realm.getDefaultInstance()
 }
 
 
