@@ -21,7 +21,7 @@ data class Resources (
 	@SerializedName("description") val description : String,
 	@SerializedName("end") val end : String,
 	@SerializedName("icon") val icon : Int,
-	@SerializedName("incidentId") val incidentId : Int,
+	@SerializedName("incidentId") val incidentId : String,
 	@SerializedName("isEndTimeBackfilled") val isEndTimeBackfilled : Boolean,
 	@SerializedName("lastModified") val lastModified : String,
 	@SerializedName("roadClosed") val roadClosed : Boolean,

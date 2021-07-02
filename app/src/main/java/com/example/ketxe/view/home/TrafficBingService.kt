@@ -24,10 +24,11 @@ interface TrafficBingService {
 class TrafficBingServiceImpl: TrafficBingService {
     override fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit) {
         val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
-        val call = virtualearthAPI.incident(area.toString(), "3", bingKey)
+        val call = virtualearthAPI.incident(area.toString(), "3,4", bingKey)
         call.enqueue(object: Callback<IncidentsResponse> {
             override fun onResponse(call: Call<IncidentsResponse>, response: Response<IncidentsResponse>) {
-                log("Response = ${response.raw().toString()}")
+                log("Response = ${response.raw()}")
+                log("So diem ket xe = ${response.body()?.resourceSets?.first()?.resources?.size}")
                 if(!response.isSuccessful) {
                     handle(errorCode = response.code())
                     return
@@ -39,12 +40,10 @@ class TrafficBingServiceImpl: TrafficBingService {
             }
 
             fun handle(errorCode: Int) {
-//                log("handle(errorCode: $errorCode)")
                 completion(ArrayList<Resources>())
             }
 
             override fun onFailure(call: Call<IncidentsResponse>, t: Throwable) {
-
                 log("onFailure(${t.localizedMessage})")
                 handle(errorCode = -999)
             }
@@ -60,17 +59,12 @@ fun makeBoundingBox(lat: Double, lon: Double, radInKm: Double): BoundingBox {
     val radInMeter = radInKm * 1000
     val longitudeD =
         asin(radInMeter / (6378000 * cos(Math.PI * latitude / 180))) * 180 / Math.PI
-    val latitudeD = asin(radInMeter.toDouble() / 6378000.toDouble()) * 180 / Math.PI
+    val latitudeD = asin(radInMeter / 6378000.toDouble()) * 180 / Math.PI
 
-    val northLat = latitude + latitudeD // NorthLat
-    val southLat = latitude - latitudeD // southLat
-    val eastLong = longitude + longitudeD // EastLong
-    val westLong = longitude - longitudeD // westLong
-
-    val maxLat = maxOf(northLat, southLat)
-    val minLat = minOf(northLat, southLat)
-    val maxLng = maxOf(eastLong, westLong)
-    val minLng = minOf(eastLong, westLong)
+    val maxLat = latitude + latitudeD
+    val minLat = latitude - latitudeD
+    val maxLng = longitude + longitudeD
+    val minLng = longitude - longitudeD
 
     return BoundingBox(minLat, minLng, maxLat, maxLng)
 }
@@ -85,20 +79,7 @@ data class BoundingBox(
     override fun toString(): String = "$minLat,$minLng,$maxLat,$maxLng"
 }
 
-object RetrofitClient {
-    private var retrofit: Retrofit? = null
-    fun getClient(baseUrl: String?): Retrofit? {
-        if (retrofit == null) {
-            retrofit = Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        }
-        return retrofit
-    }
-}
-
-val virtualearthRetrofit = Retrofit.Builder()
+val virtualearthRetrofit: Retrofit = Retrofit.Builder()
     .baseUrl("https://dev.virtualearth.net")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
@@ -115,4 +96,4 @@ interface API {
     ): Call<IncidentsResponse>
 }
 
-val virtualearthAPI = virtualearthRetrofit.create(API::class.java)
+val virtualearthAPI: API = virtualearthRetrofit.create(API::class.java)
