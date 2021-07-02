@@ -106,10 +106,11 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         }
 
         var addressFromNotif = intent.extras?.get("address") as? String
-        addressFromNotif?.let {
+        addressFromNotif?.let { addressId ->
             val lat = intent.extras?.get("lat") as Float
             val lon = intent.extras?.get("lon") as Float
             ggMyMapFragment.setInitalizeMarker(lat = lat, lon = lon)
+            presenter.didOpenFromNotification(addressId = addressId)
         }
 
         hideLoadingIndicator()
@@ -149,6 +150,18 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
 
     override fun updateAddressList(list: List<Address>) {
         reloadData(list)
+    }
+
+    override fun clearAllStuckMarkers() {
+        ggMyMapFragment.clearAllStuckMarkers()
+    }
+
+    override fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>) {
+        ggMyMapFragment.addSeriousStuckMarkers(stucks = seriousStucks)
+    }
+
+    override fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>) {
+        ggMyMapFragment.addNoSeriousStuckMarkers(stucks = noSeriousStucks)
     }
 
     private val ggMyMapFragment: MyMapFragment by lazy {
@@ -192,7 +205,6 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
                     val addressName = taskEditText.text.toString()
                     presenter.onSubmitAddress(addressName = addressName, location = it)
                 }
-
             }
             .setNegativeButton("Từ chối", null)
             .create()

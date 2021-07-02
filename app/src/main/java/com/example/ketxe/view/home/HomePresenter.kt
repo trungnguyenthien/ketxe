@@ -20,6 +20,7 @@ interface HomePresenter: ActivityPresenter {
     fun onTapClickAddAddressButton()
     fun onSubmitAddress(addressName: String, location: LatLng)
     fun onDelete(address: Address)
+    fun didOpenFromNotification(addressId: String)
 }
 
 interface HomeView {
@@ -30,6 +31,9 @@ interface HomeView {
     fun hideLoadingIndicator()
     fun moveMapCamera(latlon: LatLng)
     fun updateAddressList(list: List<Address>)
+    fun clearAllStuckMarkers()
+    fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>)
+    fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>)
 }
 
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
@@ -70,7 +74,6 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     }
 
     override fun onDelete(address: Address) {
-//        TODO("Not yet implemented")
         address.id?.let { id ->
             dbService.deleteAddress(addressId = id, completion = {
                 dbService.getAllAddress {
@@ -79,6 +82,16 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             })
         }
 
+    }
+
+    override fun didOpenFromNotification(addressId: String) {
+        dbService.getLastestStuck(addressId = addressId, completion = { stucks ->
+            val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
+            var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
+            view.clearAllStuckMarkers()
+            view.renderSeriousStuckMarkers(seriousStucks)
+            view.renderNoSeriousStuckMarkers(noSeriousStucks)
+        })
     }
 
     override fun onStart() {

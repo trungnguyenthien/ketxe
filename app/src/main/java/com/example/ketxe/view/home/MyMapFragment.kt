@@ -1,5 +1,7 @@
 package com.example.ketxe.view.home
 
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,13 +9,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.ketxe.R
 import com.example.ketxe.moveCamera
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+
 
 class MyMapFragment : Fragment() {
     var  ggMap: GoogleMap? = null
@@ -69,5 +72,58 @@ class MyMapFragment : Fragment() {
     fun setInitalizeMarker(lat: Float, lon: Float): Unit {
         initLat = lat.toDouble()
         initLon = lon.toDouble()
+    }
+
+    var listStuckMarker = ArrayList<Marker>()
+    fun clearAllStuckMarkers() {
+        listStuckMarker.forEach { it.remove() }
+        listStuckMarker.clear()
+    }
+
+    fun addSeriousStuckMarkers(stucks: List<Stuck>) {
+        fun addMarker() {
+            activity?.runOnUiThread {
+                ggMap?.let { ggMap ->
+                    val options = stucks.map { makeStuckMarker(true, it) }
+                    val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
+                    listStuckMarker.addAll(markers)
+                }
+            }
+        }
+        Thread {
+            while (ggMap == null) { Thread.sleep(200) }
+            addMarker()
+        }.start()
+    }
+
+    fun addNoSeriousStuckMarkers(stucks: List<Stuck>) {
+        fun addMarker() {
+            activity?.runOnUiThread {
+                ggMap?.let { ggMap ->
+                    val options = stucks.map { makeStuckMarker(false, it) }
+                    val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
+                    listStuckMarker.addAll(markers)
+                }
+            }
+        }
+        Thread {
+            while (ggMap == null) { Thread.sleep(200) }
+            addMarker()
+        }.start()
+    }
+
+    private fun makeStuckMarker(isSerious: Boolean, stuck: Stuck): MarkerOptions {
+        val position = LatLng(stuck.latitude.toDouble(), stuck.longitude.toDouble())
+        var resource = if(isSerious) R.drawable.s_ico else R.drawable.m_ico
+
+        val size = 65
+        val bitmapdraw = resources.getDrawable(resource) as BitmapDrawable
+        val b = bitmapdraw.bitmap
+        val smallMarker = Bitmap.createScaledBitmap(b, size, size, false)
+
+        return MarkerOptions()
+            .position(position)
+            .title(stuck.description)
+            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
     }
 }

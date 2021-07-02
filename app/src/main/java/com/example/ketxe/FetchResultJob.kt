@@ -35,18 +35,17 @@ class FetchResultJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchAllAddress(db: RealmDBService) {
         db.getAllAddress { list ->
-            log("will fetchList size = ${list.size}")
+//            log("will fetchList size = ${list.size}")
             list.forEach { address ->
-                log("will fetch address = ${address.description}")
+//                log("will fetch address = ${address.description}")
             processForEach(address, completion = {
-                log("Fetch address = ${address.description}")
+//                log("Fetch address = ${address.description}")
             })
         }}
     }
     private val api = TrafficBingServiceImpl()
     @RequiresApi(Build.VERSION_CODES.O)
     private fun processForEach(address: Address, completion: (List<Resources>) -> Unit) {
-
         val ll = LatLng(address.lat.toDouble(), address.lon.toDouble())
         api.request(ll, radius = 5.0, completion = { resources ->
             save(address, resources)
@@ -57,17 +56,19 @@ class FetchResultJob(val context: Context) {
     private fun save(address: Address, resources: List<Resources>) {
         connectDB()?.let { db ->
             val addressId = address.id ?: ""
-            val newStucks = resources.map { Stuck(
-                id = null,
-                addressId = addressId,
-                description = it.description,
-                latitude = it.toPoint.coordinates[0].toFloat(),
-                longitude = it.toPoint.coordinates[1].toFloat(),
-                updateTime = Date(),
-                severity = stuckSeverity(code = it.severity)
-            )}
-            db.saveStuck(addressId = addressId, stucks = newStucks, completion = {
-                notifyStuck(address = address, stucks = newStucks)
+            db.deleteStuck(addressId = addressId, completion = {
+                val newStucks = resources.map { Stuck(
+                    id = null,
+                    addressId = addressId,
+                    description = it.description,
+                    latitude = it.toPoint.coordinates[0].toFloat(),
+                    longitude = it.toPoint.coordinates[1].toFloat(),
+                    updateTime = Date(),
+                    severity = stuckSeverity(code = it.severity)
+                )}
+                db.saveStuck(addressId = addressId, stucks = newStucks, completion = {
+                    notifyStuck(address = address, stucks = newStucks)
+                })
             })
         }
     }
