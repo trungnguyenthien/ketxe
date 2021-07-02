@@ -31,12 +31,13 @@ fun log(msg: String) {
 class MyJobService: Service() {
     var onJob = false
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun job() {
         while (onJob) {
             log("===============================")
-            val job = FetchResultJob()
+            val job = FetchResultJob(this)
             job.run()
-            Thread.sleep(10 * 1000)
+            Thread.sleep(20 * 1000)
         }
     }
 
@@ -55,6 +56,7 @@ class MyJobService: Service() {
         return START_NOT_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         if (!onJob) {
@@ -77,16 +79,17 @@ class MyJobService: Service() {
             ContextCompat.startForegroundService(context, myServiceIntent)
         }
 
-        //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
-        @RequiresApi(Build.VERSION_CODES.O)
-        private fun createNotificationChannel(context: Context, channelId: String, channelName: String): String{
-            val chan = NotificationChannel(channelId,
-                channelName, NotificationManager.IMPORTANCE_NONE)
-            chan.lightColor = Color.BLUE
-            chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-            val service = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            service.createNotificationChannel(chan)
-            return channelId
-        }
+
     }
+}
+
+//https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
+@RequiresApi(Build.VERSION_CODES.O) fun createNotificationChannel(context: Context, channelId: String, channelName: String): String {
+    val chan = NotificationChannel(channelId,
+        channelName, NotificationManager.IMPORTANCE_NONE)
+    chan.lightColor = Color.BLUE
+    chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+    val service = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    service.createNotificationChannel(chan)
+    return channelId
 }

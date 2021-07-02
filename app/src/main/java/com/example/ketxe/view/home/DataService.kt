@@ -26,7 +26,7 @@ enum class StuckSeverity(val code: Int) {
     Serious(4)
 }
 
-fun stuckSeverity(code: Int): StuckSeverity {
+public fun stuckSeverity(code: Int): StuckSeverity {
     return when(code) {
         1-> StuckSeverity.LowImpact
         2 -> StuckSeverity.Minor
