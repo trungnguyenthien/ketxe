@@ -24,8 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 
-
-class MapsActivity : AppCompatActivity(), HomeView {
+ class MapsActivity : AppCompatActivity(), HomeView {
 
     private lateinit var binding: ActivityMapsBinding
 
@@ -154,19 +153,23 @@ class MapsActivity : AppCompatActivity(), HomeView {
         ggMyMapFragment.clearAllStuckPolygon()
     }
 
-    override fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>) {
-        ggMyMapFragment.addSeriousStuckMarkers(stucks = seriousStucks)
+    override fun renderSeriousStuckLines(seriousStucks: List<Stuck>) {
+        ggMyMapFragment.addSeriousLines(stucks = seriousStucks)
     }
 
-    override fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>) {
-        ggMyMapFragment.addNoSeriousStuckMarkers(stucks = noSeriousStucks)
+    override fun renderNoSeriousStuckLines(noSeriousStucks: List<Stuck>) {
+        ggMyMapFragment.addNoSeriousLines(stucks = noSeriousStucks)
     }
 
     override fun closeAddressList() {
         drawerLayout.closeDrawers()
     }
 
-    private val ggMyMapFragment: MyMapFragment by lazy {
+     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {
+         ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
+     }
+
+     private val ggMyMapFragment: MyMapFragment by lazy {
         MyMapFragment()
     }
 

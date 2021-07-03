@@ -19,8 +19,54 @@ data class Stuck(
     val severity: StuckSeverity,
     val startTime: Date,
     val fromPoint: String,
-    val toPoint: String
+    val toPoint: String,
+    val isClosedRoad: Boolean,
+    val type: StuckType,
+    val title: String
 )
+
+/**
+- 1: Accident
+- 2: Congestion
+- 3: DisabledVehicle
+- 4: MassTransit
+- 5: Miscellaneous
+- 6: OtherNews
+- 7: PlannedEvent
+- 8: RoadHazard
+- 9: Construction
+- 10: Alert
+- 11: Weather
+ */
+enum class StuckType(val code: Int) {
+    Accident(1),
+    Congestion(2),
+    DisabledVehicle(3),
+    MassTransit(4),
+    Miscellaneous(5),
+    OtherNews(6),
+    PlannedEvent(7),
+    RoadHazard(8),
+    Construction(9),
+    Alert(10),
+    Weather(11)
+}
+
+fun stuckType(code: Int): StuckType {
+    return when(code) {
+        1 -> StuckType.Accident
+        2 -> StuckType.Congestion
+        3 -> StuckType.DisabledVehicle
+        4 -> StuckType.MassTransit
+        5 -> StuckType.Miscellaneous
+        6 -> StuckType.OtherNews
+        7 -> StuckType.PlannedEvent
+        8 -> StuckType.RoadHazard
+        9 -> StuckType.Construction
+        10 -> StuckType.Alert
+        else -> StuckType.Weather
+    }
+}
 
 enum class StuckSeverity(val code: Int) {
     LowImpact(1),
@@ -29,7 +75,7 @@ enum class StuckSeverity(val code: Int) {
     Serious(4)
 }
 
-public fun stuckSeverity(code: Int): StuckSeverity {
+fun stuckSeverity(code: Int): StuckSeverity {
     return when(code) {
         1-> StuckSeverity.LowImpact
         2 -> StuckSeverity.Minor

@@ -42,6 +42,15 @@ class MyMapFragment : Fragment() {
             val sydney = LatLng(initLat, initLon)
             addMarker(lat = sydney.latitude, lon = sydney.longitude)
             ggMap?.moveCamera(initLat, initLon, 13.0, true)
+            ggMap?.setMapStyle(MapStyleOptions("[\n" +
+                    "  {\n" +
+                    "    \"featureType\": \"road.arterial\",\n" +
+                    "    \"elementType\": \"geometry\",\n" +
+                    "    \"stylers\": [\n" +
+                    "      { \"color\": \"#CCFFFF\" }\n" +
+                    "    ]\n" +
+                    "  }\n" +
+                    "]"))
             addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
             myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
             addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
@@ -77,44 +86,46 @@ class MyMapFragment : Fragment() {
         listStuckPolyline.clear()
     }
 
-    fun addSeriousStuckMarkers(stucks: List<Stuck>) {
+    fun addSeriousLines(stucks: List<Stuck>) {
+        addLine(stucks, LineType.SERIOUS)
+    }
+
+    fun addNoSeriousLines(stucks: List<Stuck>) {
+        addLine(stucks, LineType.NO_SERIOUS)
+    }
+
+    private fun addLine(stucks: List<Stuck>, lineType: LineType) {
         fun addPolyline() {
             activity?.runOnUiThread {
-                val options = stucks.map { makePolygonOption(true, it)}
+                val options = stucks.map { makePolygonOption(lineType, it)}
                 val polylines = options.map { ggMap?.addPolyline(it) }.filterNotNull()
                 listStuckPolyline.addAll(polylines)
             }
         }
         Thread {
-            while (ggMap == null) { Thread.sleep(200) }
+            while (ggMap == null) { Thread.sleep(50) }
             addPolyline()
         }.start()
     }
 
-    fun addNoSeriousStuckMarkers(stucks: List<Stuck>) {
-        fun addPolyline() {
-            activity?.runOnUiThread {
-                val options = stucks.map { makePolygonOption(false, it)}
-                val polylines = options.map { ggMap?.addPolyline(it) }.filterNotNull()
-                listStuckPolyline.addAll(polylines)
-            }
-        }
-        Thread {
-            while (ggMap == null) { Thread.sleep(200) }
-            addPolyline()
-        }.start()
+    private enum class LineType(val resColorId: Int) {
+        SERIOUS(R.color.seriousLine),
+        NO_SERIOUS(R.color.noSeriousLine),
+        CLOSED_ROAD(R.color.closeRoadLine)
     }
 
-    private fun makePolygonOption(isSerious: Boolean, stuck: Stuck): PolylineOptions {
-        val seriousColor =  context?.getColor(R.color.seriousLine) ?: 0x00000000
-        val noSeriousColor =  context?.getColor(R.color.noSeriousLine) ?: 0x00000000
-        val strokeColor = if(isSerious) seriousColor else noSeriousColor
+    private fun makePolygonOption(lineType: LineType, stuck: Stuck): PolylineOptions {
+        val color =  context?.getColor(lineType.resColorId) ?: 0x00000000
         return PolylineOptions()
             .clickable(true)
-            .color(strokeColor)
+            .color(color)
             .width(13f)
             .add(stuck.fromPoint.toLatLng())
             .add(stuck.toPoint.toLatLng())
+    }
+
+    fun addClosedRoadLines(stucks: List<Stuck>) {
+        addLine(stucks, LineType.CLOSED_ROAD)
     }
 }
 

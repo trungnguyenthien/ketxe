@@ -37,6 +37,9 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
                     this.startTime = entity.startTime
                     this.fromPoint = entity.fromPoint
                     this.toPoint = entity.toPoint
+                    this.isClosedRoad = entity.isClosedRoad
+                    this.type = entity.type.code
+                    this.title = entity.title
                 }
             }
             it.insert(list)
@@ -140,6 +143,9 @@ open class DbStuck : RealmObject() {
     var startTime = Date()
     var fromPoint = ""
     var toPoint = ""
+    var isClosedRoad: Boolean = false
+    var type: Int = 0
+    var title = ""
 }
 
 fun DbStuck.toEntity() = Stuck(
@@ -152,8 +158,13 @@ fun DbStuck.toEntity() = Stuck(
     stuckSeverity(severity),
     startTime,
     fromPoint,
-    toPoint
+    toPoint,
+    isClosedRoad,
+    stuckType(type),
+    title
 )
+
+
 fun DbAddress.toEntity() = Address(id, description, latitude, longitude)
 
 fun genId(): String {

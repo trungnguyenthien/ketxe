@@ -46,9 +46,9 @@ class MyJobService: Service() {
         val channelId = createNotificationChannel(this, "channelID", "channelName")
         val notificationBuilder = NotificationCompat.Builder(this, channelId )
         val notification = notificationBuilder.setOngoing(true)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Background Service")
-            .setContentText("Xin chao")
+            .setSmallIcon(R.drawable.s_ico)
+            .setContentTitle("Hệ thống cảnh báo kẹt xe")
+            .setContentText("... App đang cập nhật dữ liệu giao thông 24/24 ...")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
@@ -73,18 +73,16 @@ class MyJobService: Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-
         fun startJob(context: Context) {
             val myServiceIntent = Intent(context, MyJobService::class.java)
             ContextCompat.startForegroundService(context, myServiceIntent)
         }
-
-
     }
 }
 
 //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
-@RequiresApi(Build.VERSION_CODES.O) fun createNotificationChannel(context: Context, channelId: String, channelName: String): String {
+@RequiresApi(Build.VERSION_CODES.O)
+fun createNotificationChannel(context: Context, channelId: String, channelName: String): String {
     val chan = NotificationChannel(channelId,
         channelName, NotificationManager.IMPORTANCE_NONE)
     chan.lightColor = Color.BLUE

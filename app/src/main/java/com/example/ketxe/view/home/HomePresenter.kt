@@ -33,9 +33,10 @@ interface HomeView {
     fun moveMapCamera(latlon: LatLng)
     fun updateAddressList(list: List<HomeAddressRow>)
     fun clearAllStuckMarkers()
-    fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>)
-    fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>)
+    fun renderSeriousStuckLines(seriousStucks: List<Stuck>)
+    fun renderNoSeriousStuckLines(noSeriousStucks: List<Stuck>)
     fun closeAddressList()
+    fun renderClosedRoadLines(closeRoad: List<Stuck>)
 }
 
 data class HomeAddressRow(val address: Address, val serious: Int, val noSerious: Int)
@@ -89,26 +90,26 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     override fun onOpenFromNotification(addressId: String) {
         val stucks = dbService.getLastestStuck(addressId)
-        val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
-        var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
+        val analyseResult = analyse(stucks)
         view.clearAllStuckMarkers()
-        view.renderSeriousStuckMarkers(seriousStucks)
-        view.renderNoSeriousStuckMarkers(noSeriousStucks)
+        view.renderClosedRoadLines(analyseResult.closesRoads)
+        view.renderSeriousStuckLines(analyseResult.serious)
+        view.renderNoSeriousStuckLines(analyseResult.noSerious)
     }
 
     override fun onTapAddressOnMenu(addressId: String) {
         dbService.getAddress(addressId)?.let { address ->
             val stucks = dbService.getLastestStuck(addressId)
-            val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
-            var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
+            val analyseResult = analyse(stucks)
 
             val location = LatLng(address.lat.toDouble(), address.lon.toDouble())
 
             view.clearAllStuckMarkers()
             view.addMarker(location)
             view.moveMapCamera(location)
-            view.renderSeriousStuckMarkers(seriousStucks)
-            view.renderNoSeriousStuckMarkers(noSeriousStucks)
+            view.renderClosedRoadLines(analyseResult.closesRoads)
+            view.renderSeriousStuckLines(analyseResult.serious)
+            view.renderNoSeriousStuckLines(analyseResult.noSerious)
             view.closeAddressList()
         }
     }
@@ -149,4 +150,34 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             view.updateAddressList(it)
         }
     }
+}
+
+data class AnalyseResult(
+    var closesRoads: List<Stuck>,
+    var serious: List<Stuck>,
+    var noSerious: List<Stuck>,
+    var closesRoadsCount: Int,
+    var seriousCount: Int,
+    var noSeriousCount: Int
+)
+
+fun analyse(stucks: List<Stuck>): AnalyseResult {
+    val distinctStucks = stucks.distinctBy { it.title }
+
+    val closeRoad =  distinctStucks.filter { it.isClosedRoad }
+    val seriousStucks = distinctStucks.filter { it.severity == StuckSeverity.Serious && !it.isClosedRoad }
+    val noSeriousStucks = distinctStucks.filter { it.severity != StuckSeverity.Serious && !it.isClosedRoad }
+
+    val closesRoadsCount = closeRoad.map { it.title }.distinct().size
+    val seriousCount = seriousStucks.map { it.title }.distinct().size
+    val noSeriousCount = noSeriousStucks.map { it.title }.distinct().size
+
+    return AnalyseResult(
+        closeRoad,
+        seriousStucks,
+        noSeriousStucks,
+        closesRoadsCount,
+        seriousCount,
+        noSeriousCount
+    )
 }

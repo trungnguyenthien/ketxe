@@ -28,7 +28,7 @@ data class Resources (
 	@SerializedName("severity") val severity : Int,
 	@SerializedName("source") val source : Int,
 	@SerializedName("start") val start : String,
-	@SerializedName("title") val title : String,
+	@SerializedName("title") val title : String?,
 	@SerializedName("toPoint") val toPoint : ToPoint,
 	@SerializedName("type") val type : Int,
 	@SerializedName("verified") val verified : Boolean

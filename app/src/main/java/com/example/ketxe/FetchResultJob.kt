@@ -53,9 +53,8 @@ class FetchResultJob(val context: Context) {
                     val startTime = toDate(it.start)
                     val now = Date()
                     val isToday = startTime.simpleDateFormat() == now.simpleDateFormat()
-                    val isDelay1hour = (now.HOUR_OF_DAY() - startTime.HOUR_OF_DAY()) < 1
                     val verified = it.verified
-                    return@filter verified && isToday && isDelay1hour
+                    return@filter verified && isToday //&& isDelay1hour
                 }.map { Stuck(
                     id = null,
                     addressId = addressId,
@@ -66,7 +65,10 @@ class FetchResultJob(val context: Context) {
                     severity = stuckSeverity(code = it.severity),
                     startTime = toDate(it.start),
                     fromPoint = it.point.coordinates.joinToString(","),
-                    toPoint = it.toPoint.coordinates.joinToString(",")
+                    toPoint = it.toPoint.coordinates.joinToString(","),
+                    isClosedRoad = it.roadClosed,
+                    type = stuckType(it.type),
+                    title = it.title ?: "---"
                 )}
                 db.saveStuck(addressId = addressId, stucks = newStucks, completion = {
                     notifyStuck(address = address, stucks = newStucks)
@@ -77,14 +79,13 @@ class FetchResultJob(val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun notifyStuck(address: Address, stucks: List<Stuck>) {
-        val numberSerious = stucks.filter { it.severity == StuckSeverity.Serious }.size
-        val numberModerate = stucks.filter { it.severity == StuckSeverity.Moderate }.size
+        val result = analyse(stucks)
         val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val vibratePattern = longArrayOf(0, 250, 100, 250)
         val mBuilder = NotificationCompat.Builder(context, "channelID")
             .setSmallIcon(R.drawable.image_address_map_icon) // notification icon
             .setContentTitle("🔴 Khu vực [${address.description}]") // title for notification
-            .setContentText("Có $numberSerious điểm kẹt xe, $numberModerate điểm đông xe") // message for notification
+            .setContentText("Có ${result.closesRoadsCount} đường bị chặn, Có ${result.seriousCount} điểm kẹt xe, ${result.noSeriousCount} điểm đông xe") // message for notification
             .setAutoCancel(true) // clear notification after click
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(Notification.CATEGORY_SERVICE)

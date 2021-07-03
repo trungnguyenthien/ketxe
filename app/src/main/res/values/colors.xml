@@ -8,5 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="seriousLine">#E91E63</color>
+    <color name="closeRoadLine">#FF5722</color>
     <color name="noSeriousLine">#FFC107</color>
 </resources>
