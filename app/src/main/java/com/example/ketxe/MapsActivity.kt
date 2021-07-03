@@ -105,8 +105,8 @@ import com.google.android.gms.maps.model.LatLng
         var addressFromNotif = intent.extras?.get("address") as? String
         addressFromNotif?.let { addressId ->
             val lat = intent.extras?.get("lat") as Float
-            val lon = intent.extras?.get("lon") as Float
-            ggMyMapFragment.setInitalizeMarker(lat = lat, lon = lon)
+            val lng = intent.extras?.get("lng") as Float
+            ggMyMapFragment.setInitalizeMarker(lat = lat, lng = lng)
             presenter.onOpenFromNotification(addressId = addressId)
         }
 
@@ -137,12 +137,12 @@ import com.google.android.gms.maps.model.LatLng
 
     override fun activity(): Activity = this
 
-    override fun addMarker(latlon: LatLng) {
-        ggMyMapFragment.addMarker(lat = latlon.latitude, lon = latlon.longitude)
+    override fun addMarker(latLng: LatLng) {
+        ggMyMapFragment.addMarker(lat = latLng.latitude, lng = latLng.longitude)
     }
 
-    override fun moveMapCamera(latlon: LatLng) {
-        ggMyMapFragment.ggMap?.moveCamera(latlon.latitude, latlon.longitude, 13.0, true)
+    override fun moveMapCamera(latlng: LatLng) {
+        ggMyMapFragment.ggMap?.moveCamera(latlng.latitude, latlng.longitude, 13.0, true)
     }
 
     override fun updateAddressList(list: List<HomeAddressRow>) {
@@ -227,11 +227,11 @@ fun requestTrafficPermission(activity: Activity, code: Int) {
 
 fun GoogleMap.moveCamera(
     lat: Double,
-    lon: Double,
+    lng: Double,
     zoom: Double = 15.0,
     animated: Boolean = true
 ) {
-    val loc = LatLng(lat, lon)
+    val loc = LatLng(lat, lng)
     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(loc, zoom.toFloat())
     if (animated) {
         this.animateCamera(cameraUpdate)

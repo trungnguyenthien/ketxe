@@ -1,7 +1,5 @@
 package com.example.ketxe.view.home
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,9 +37,9 @@ class MyMapFragment : Fragment() {
         supportMapFragment.getMapAsync {
             ggMap = it
 
-            val sydney = LatLng(initLat, initLon)
-            addMarker(lat = sydney.latitude, lon = sydney.longitude)
-            ggMap?.moveCamera(initLat, initLon, 13.0, true)
+            val sydney = LatLng(initLat, initLng)
+            addMarker(lat = sydney.latitude, lng = sydney.longitude)
+            ggMap?.moveCamera(initLat, initLng, 13.0, true)
             ggMap?.setMapStyle(MapStyleOptions("[\n" +
                     "  {\n" +
                     "    \"featureType\": \"road.arterial\",\n" +
@@ -62,9 +60,9 @@ class MyMapFragment : Fragment() {
 
     private var currentMarker: Marker? = null
     private var currentMarkerLatLng: LatLng? = null
-    fun addMarker(lat: Double, lon: Double) {
+    fun addMarker(lat: Double, lng: Double) {
         currentMarker?.remove()
-        currentMarkerLatLng = LatLng(lat, lon)
+        currentMarkerLatLng = LatLng(lat, lng)
 
         currentMarker = ggMap?.addMarker(MarkerOptions().position(currentMarkerLatLng))
     }
@@ -74,10 +72,10 @@ class MyMapFragment : Fragment() {
     }
 
     var initLat: Double = -34.0
-    var initLon: Double = 151.0
-    fun setInitalizeMarker(lat: Float, lon: Float): Unit {
+    var initLng: Double = 151.0
+    fun setInitalizeMarker(lat: Float, lng: Float): Unit {
         initLat = lat.toDouble()
-        initLon = lon.toDouble()
+        initLng = lng.toDouble()
     }
 
     var listStuckPolyline = ArrayList<Polyline>()

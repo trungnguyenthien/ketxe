@@ -12,7 +12,6 @@ import androidx.core.app.NotificationCompat
 import com.example.ketxe.entity.Resources
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
-import io.realm.Realm
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,7 +35,7 @@ class FetchResultJob(val context: Context) {
     private val api = TrafficBingServiceImpl()
     @RequiresApi(Build.VERSION_CODES.O)
     private fun processForEach(address: Address) {
-        val ll = LatLng(address.lat.toDouble(), address.lon.toDouble())
+        val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
         api.request(ll, radius = 5.0, completion = { resources ->
             save(address, resources)
         })
@@ -96,7 +95,7 @@ class FetchResultJob(val context: Context) {
         val intent = Intent(context, MapsActivity::class.java).apply {
             this.putExtra("address", address.id)
             this.putExtra("lat", address.lat)
-            this.putExtra("lon", address.lon)
+            this.putExtra("lng", address.lng)
         }
         val pi = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         mBuilder.setContentIntent(pi)

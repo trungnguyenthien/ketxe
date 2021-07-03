@@ -6,17 +6,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 interface ActivityPresenter {
-    fun onStart()
     fun onResume(time: Int)
-    fun onPause(time: Int)
-    fun onNoLongerVisible()
-    fun onDestroyBySystem()
 }
 
 interface HomePresenter: ActivityPresenter {
     fun onTapMyLocation()
     fun onTapAddMarker(mapLocation: LatLng)
-    fun onSetBackgroundAlarm()
     fun onTapClickAddAddressButton()
     fun onSubmitAddress(addressName: String, location: LatLng)
     fun onDelete(address: Address)
@@ -26,11 +21,11 @@ interface HomePresenter: ActivityPresenter {
 
 interface HomeView {
     fun activity(): Activity
-    fun addMarker(latlon: LatLng)
+    fun addMarker(latLng: LatLng)
     fun showInputAddressName()
     fun showLoadingIndicator(message: String)
     fun hideLoadingIndicator()
-    fun moveMapCamera(latlon: LatLng)
+    fun moveMapCamera(latlng: LatLng)
     fun updateAddressList(list: List<HomeAddressRow>)
     fun clearAllStuckMarkers()
     fun renderSeriousStuckLines(seriousStucks: List<Stuck>)
@@ -61,21 +56,19 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         view.addMarker(LatLng(mapLocation.latitude, mapLocation.longitude))
     }
 
-    override fun onSetBackgroundAlarm() {
-
-    }
-
     override fun onTapClickAddAddressButton() {
         view.showInputAddressName()
     }
 
     override fun onSubmitAddress(addressName: String, location: LatLng) {
         dbService.saveAddress(Address(
-            null,
-            addressName,
-            location.latitude.toFloat(),
-            location.longitude.toFloat()
-        ) ,completion = { onSaveAddressCompletion() })
+            id = null,
+            description = addressName,
+            lat = location.latitude.toFloat(),
+            lng = location.longitude.toFloat()
+        ) ,completion = {
+            onSaveAddressCompletion()
+        })
     }
 
     override fun onDelete(address: Address) {
@@ -102,7 +95,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             val stucks = dbService.getLastestStuck(addressId)
             val analyseResult = analyse(stucks)
 
-            val location = LatLng(address.lat.toDouble(), address.lon.toDouble())
+            val location = LatLng(address.lat.toDouble(), address.lng.toDouble())
 
             view.clearAllStuckMarkers()
             view.addMarker(location)
@@ -114,8 +107,6 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         }
     }
 
-    override fun onStart() {}
-
     override fun onResume(time: Int) {
         loadAddressRow {
             view.updateAddressList(it)
@@ -123,7 +114,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     }
 
     private fun loadAddressRow(completion: (List<HomeAddressRow>) -> Unit) {
-        var rows = ArrayList<HomeAddressRow>()
+        val rows = ArrayList<HomeAddressRow>()
 
         val list = dbService.getAllAddress()
         list.forEach { address ->
@@ -134,12 +125,6 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         }
         completion.invoke(rows)
     }
-
-    override fun onPause(time: Int) { }
-
-    override fun onNoLongerVisible() { }
-
-    override fun onDestroyBySystem() { }
 
     private fun onSaveAddressCompletion() = runBlocking {
         delay(100)

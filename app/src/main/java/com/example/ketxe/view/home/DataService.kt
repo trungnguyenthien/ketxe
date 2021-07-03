@@ -6,7 +6,7 @@ data class Address(
     val id: String?,
     val description: String,
     val lat: Float,
-    val lon: Float
+    val lng: Float
 )
 
 data class Stuck(

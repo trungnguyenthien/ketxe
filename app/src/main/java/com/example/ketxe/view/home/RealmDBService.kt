@@ -17,7 +17,7 @@ open class RealmDBService(): DataService {
                 this.id = genId()
                 this.description = address.description
                 this.latitude = address.lat
-                this.longitude = address.lon
+                this.longitude = address.lng
             }
             it.insert(dto)
         }

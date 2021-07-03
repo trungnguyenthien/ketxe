@@ -51,9 +51,9 @@ class TrafficBingServiceImpl: TrafficBingService {
 
 }
 
-fun makeBoundingBox(lat: Double, lon: Double, radInKm: Double): BoundingBox {
+fun makeBoundingBox(lat: Double, lng: Double, radInKm: Double): BoundingBox {
     val latitude: Double = lat
-    val longitude: Double = lon
+    val longitude: Double = lng
 
     val radInMeter = radInKm * 1000
     val longitudeD =
