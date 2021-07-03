@@ -35,6 +35,7 @@ interface HomeView {
     fun clearAllStuckMarkers()
     fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>)
     fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>)
+    fun closeAddressList()
 }
 
 data class HomeAddressRow(val address: Address, val serious: Int, val noSerious: Int)
@@ -100,10 +101,15 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             val stucks = dbService.getLastestStuck(addressId)
             val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
             var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
+
+            val location = LatLng(address.lat.toDouble(), address.lon.toDouble())
+
             view.clearAllStuckMarkers()
-            view.addMarker(LatLng(address.lat.toDouble(), address.lon.toDouble()))
+            view.addMarker(location)
+            view.moveMapCamera(location)
             view.renderSeriousStuckMarkers(seriousStucks)
             view.renderNoSeriousStuckMarkers(noSeriousStucks)
+            view.closeAddressList()
         }
     }
 

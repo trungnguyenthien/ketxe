@@ -27,7 +27,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 
 
-class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchListener {
+class MapsActivity : AppCompatActivity(), HomeView {
 
     private lateinit var binding: ActivityMapsBinding
 
@@ -54,13 +54,19 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         addressList.adapter = adapter
         addressList.layoutManager = LinearLayoutManager(this)
         addressList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-        addressList.addOnItemTouchListener(this)
         adapter.onDeleteItem = { onDelete(it) }
+        adapter.onClickAddress = { onClickAddressOnList(it) }
         return@lazy adapter
     }
 
-    private fun onDelete(address: Address): Unit {
+    private fun onDelete(address: Address) {
         presenter.onDelete(address = address)
+    }
+
+    private fun onClickAddressOnList(address: Address) {
+        address.id?.let { addressId ->
+            presenter.onTapAddressOnMenu(addressId = addressId)
+        }
     }
 
     private fun reloadData(list: List<HomeAddressRow>) {
@@ -139,7 +145,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
     }
 
     override fun moveMapCamera(latlon: LatLng) {
-        ggMyMapFragment.ggMap?.moveCamera(latlon.latitude, latlon.longitude, 17.0, true)
+        ggMyMapFragment.ggMap?.moveCamera(latlon.latitude, latlon.longitude, 13.0, true)
     }
 
     override fun updateAddressList(list: List<HomeAddressRow>) {
@@ -156,6 +162,10 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
 
     override fun renderNoSeriousStuckMarkers(noSeriousStucks: List<Stuck>) {
         ggMyMapFragment.addNoSeriousStuckMarkers(stucks = noSeriousStucks)
+    }
+
+    override fun closeAddressList() {
+        drawerLayout.closeDrawers()
     }
 
     private val ggMyMapFragment: MyMapFragment by lazy {
@@ -204,14 +214,6 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
             .create()
         dialog.show()
     }
-
-    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean = true
-
-    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
-        print("")
-    }
-
-    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
 }
 
 fun requestTrafficPermission(activity: Activity, code: Int) {

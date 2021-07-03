@@ -64,7 +64,7 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
     override fun getAddress(addressId: String): Address? {
         realm?.run {
             val output = this.where<DbAddress>()
-                .equalTo("addressId", addressId)
+                .equalTo("id", addressId)
                 .findFirst()
             return output?.toEntity()
         }
