@@ -37,7 +37,7 @@ class MyJobService: Service() {
             log("===============================")
             val job = FetchResultJob(this)
             job.run()
-            Thread.sleep(2 * 60 * 1000)
+            Thread.sleep(20 * 1000)
         }
     }
 

@@ -11,10 +11,7 @@ import com.example.ketxe.R
 import com.example.ketxe.moveCamera
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
@@ -74,56 +71,56 @@ class MyMapFragment : Fragment() {
         initLon = lon.toDouble()
     }
 
-    var listStuckMarker = ArrayList<Marker>()
-    fun clearAllStuckMarkers() {
-        listStuckMarker.forEach { it.remove() }
-        listStuckMarker.clear()
+    var listStuckPolyline = ArrayList<Polyline>()
+    fun clearAllStuckPolygon() {
+        listStuckPolyline.forEach { it.remove() }
+        listStuckPolyline.clear()
     }
 
     fun addSeriousStuckMarkers(stucks: List<Stuck>) {
-        fun addMarker() {
+        fun addPolyline() {
             activity?.runOnUiThread {
-                ggMap?.let { ggMap ->
-                    val options = stucks.map { makeStuckMarker(true, it) }
-                    val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
-                    listStuckMarker.addAll(markers)
-                }
+                val options = stucks.map { makePolygonOption(true, it)}
+                val polylines = options.map { ggMap?.addPolyline(it) }.filterNotNull()
+                listStuckPolyline.addAll(polylines)
             }
         }
         Thread {
             while (ggMap == null) { Thread.sleep(200) }
-            addMarker()
+            addPolyline()
         }.start()
     }
 
     fun addNoSeriousStuckMarkers(stucks: List<Stuck>) {
-        fun addMarker() {
+        fun addPolyline() {
             activity?.runOnUiThread {
-                ggMap?.let { ggMap ->
-                    val options = stucks.map { makeStuckMarker(false, it) }
-                    val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
-                    listStuckMarker.addAll(markers)
-                }
+                val options = stucks.map { makePolygonOption(false, it)}
+                val polylines = options.map { ggMap?.addPolyline(it) }.filterNotNull()
+                listStuckPolyline.addAll(polylines)
             }
         }
         Thread {
             while (ggMap == null) { Thread.sleep(200) }
-            addMarker()
+            addPolyline()
         }.start()
     }
 
-    private fun makeStuckMarker(isSerious: Boolean, stuck: Stuck): MarkerOptions {
-        val position = LatLng(stuck.latitude.toDouble(), stuck.longitude.toDouble())
-        var resource = if(isSerious) R.drawable.s_ico else R.drawable.m_ico
-
-        val size = 65
-        val bitmapdraw = resources.getDrawable(resource) as BitmapDrawable
-        val b = bitmapdraw.bitmap
-        val smallMarker = Bitmap.createScaledBitmap(b, size, size, false)
-
-        return MarkerOptions()
-            .position(position)
-            .title(stuck.description)
-            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+    private fun makePolygonOption(isSerious: Boolean, stuck: Stuck): PolylineOptions {
+        val seriousColor =  context?.getColor(R.color.seriousLine) ?: 0x00000000
+        val noSeriousColor =  context?.getColor(R.color.noSeriousLine) ?: 0x00000000
+        val strokeColor = if(isSerious) seriousColor else noSeriousColor
+        return PolylineOptions()
+            .clickable(true)
+            .color(strokeColor)
+            .width(13f)
+            .add(stuck.fromPoint.toLatLng())
+            .add(stuck.toPoint.toLatLng())
     }
+}
+
+fun String.toLatLng(): LatLng {
+    val parts = this.split(",")
+    val lat = parts[0].toDouble()
+    val lng = parts[1].toDouble()
+    return LatLng(lat, lng)
 }

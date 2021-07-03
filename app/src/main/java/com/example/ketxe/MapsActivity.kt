@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
@@ -19,7 +18,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -153,7 +151,7 @@ class MapsActivity : AppCompatActivity(), HomeView {
     }
 
     override fun clearAllStuckMarkers() {
-        ggMyMapFragment.clearAllStuckMarkers()
+        ggMyMapFragment.clearAllStuckPolygon()
     }
 
     override fun renderSeriousStuckMarkers(seriousStucks: List<Stuck>) {

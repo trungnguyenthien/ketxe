@@ -16,7 +16,10 @@ data class Stuck(
     val latitude: Float,
     val longitude: Float,
     val updateTime: Date = Date(),
-    val severity: StuckSeverity
+    val severity: StuckSeverity,
+    val startTime: Date,
+    val fromPoint: String,
+    val toPoint: String
 )
 
 enum class StuckSeverity(val code: Int) {
