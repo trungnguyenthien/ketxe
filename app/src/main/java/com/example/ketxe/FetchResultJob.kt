@@ -16,21 +16,19 @@ import io.realm.Realm
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-fun connectDB(): RealmDBService? {
-    Realm.getDefaultInstance()?.run { return RealmDBService(this) }
-    return null
+fun realmDBService(): RealmDBService {
+    return RealmDBService()
 }
 
 class FetchResultJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun run() {
-        connectDB()?.let { fetchAllAddress(it) }
+        fetchAllAddress()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun fetchAllAddress(db: RealmDBService) {
-        db.getAllAddress().forEach { address ->
+    private fun fetchAllAddress() {
+        realmDBService().getAllAddress().forEach { address ->
             processForEach(address)
         }
     }
@@ -46,16 +44,16 @@ class FetchResultJob(val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun save(address: Address, resources: List<Resources>) {
-        connectDB()?.let { db ->
-            val addressId = address.id ?: ""
-            db.deleteStuck(addressId = addressId, completion = {
-                val newStucks = resources.filter {
-                    val startTime = toDate(it.start)
-                    val now = Date()
-                    val isToday = startTime.simpleDateFormat() == now.simpleDateFormat()
-                    val verified = it.verified
-                    return@filter verified && isToday //&& isDelay1hour
-                }.map { Stuck(
+        val addressId = address.id ?: ""
+        realmDBService().deleteStuck(addressId = addressId, completion = {
+            val newStucks = resources.filter {
+                val startTime = toDate(it.start)
+                val now = Date()
+                val isToday = startTime.simpleDateFormat() == now.simpleDateFormat()
+                val verified = it.verified
+                return@filter verified && isToday //&& isDelay1hour
+            }.map {
+                Stuck(
                     id = null,
                     addressId = addressId,
                     description = it.description,
@@ -69,12 +67,12 @@ class FetchResultJob(val context: Context) {
                     isClosedRoad = it.roadClosed,
                     type = stuckType(it.type),
                     title = it.title ?: "---"
-                )}
-                db.saveStuck(addressId = addressId, stucks = newStucks, completion = {
-                    notifyStuck(address = address, stucks = newStucks)
-                })
+                )
+            }
+            realmDBService().saveStuck(addressId = addressId, stucks = newStucks, completion = {
+                notifyStuck(address = address, stucks = newStucks)
             })
-        }
+        })
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -82,17 +80,18 @@ class FetchResultJob(val context: Context) {
         val result = analyse(stucks)
         val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val vibratePattern = longArrayOf(0, 250, 100, 250)
+        val message = "${result.closesRoadsCount} đường bị chặn, ${result.seriousCount} điểm kẹt xe, ${result.noSeriousCount} điểm đông xe"
         val mBuilder = NotificationCompat.Builder(context, "channelID")
             .setSmallIcon(R.drawable.image_address_map_icon) // notification icon
             .setContentTitle("🔴 Khu vực [${address.description}]") // title for notification
-            .setContentText("Có ${result.closesRoadsCount} đường bị chặn, Có ${result.seriousCount} điểm kẹt xe, ${result.noSeriousCount} điểm đông xe") // message for notification
+            .setContentText(message) // message for notification
             .setAutoCancel(true) // clear notification after click
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setVibrate(vibratePattern)
             .setSound(alarmSound)
             .setGroup("ketxe")
-//            .setStyle(NotificationCompat.BigTextStyle().bigText("Much longer text that cannot fit one line...Much longer text that cannot fit one line...Much longer text that cannot fit one line...Much longer text that cannot fit one line..."))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
 
         val intent = Intent(context, MapsActivity::class.java).apply {
             this.putExtra("address", address.id)

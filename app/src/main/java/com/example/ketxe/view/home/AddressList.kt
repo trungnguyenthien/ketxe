@@ -14,14 +14,18 @@ class AddressList(context: Context, attrs: AttributeSet?) : RecyclerView(context
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val addressText: TextView by lazy { itemView.findViewById<TextView>(R.id.address_text) }
-        private val infoText: TextView by lazy { itemView.findViewById<TextView>(R.id.info_text) }
+        private val closeRoadText: TextView by lazy { itemView.findViewById<TextView>(R.id.closeRoad_text) }
+        private val seriousText: TextView by lazy { itemView.findViewById<TextView>(R.id.serious_text) }
+        private val noSeriousText: TextView by lazy { itemView.findViewById<TextView>(R.id.noSerious_text) }
         private val btnDelete: ImageButton by lazy { itemView.findViewById<ImageButton>(R.id.btn_remove_address) }
         fun config(item: HomeAddressRow,
                    deleteAction: (Address) -> Unit,
                    clickAction: (Address) -> Unit
         ) {
             addressText.text = item.address.description
-            infoText.text = "- ${item.serious} điểm kẹt xe \n- ${item.noSerious} điểm đông xe"
+            closeRoadText.text = "+ Có ${item.result.closesRoadsCount} đường bị chặn"
+            seriousText.text = "+ Có ${item.result.seriousCount} điểm kẹt xe"
+            noSeriousText.text = "+ Có ${item.result.noSeriousCount} điểm đông xe"
             btnDelete.setOnClickListener {
                 deleteAction.invoke(item.address)
             }

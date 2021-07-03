@@ -9,9 +9,10 @@ import io.realm.annotations.PrimaryKey
 import io.realm.kotlin.where
 import java.util.*
 
-open class RealmDBService(val realm: Realm? = globalRealm): DataService {
+open class RealmDBService(): DataService {
     override fun saveAddress(address: Address, completion: () -> Unit) {
-        realm?.executeTransaction {
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
             val dto = DbAddress().apply {
                 this.id = genId()
                 this.description = address.description
@@ -20,11 +21,13 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
             }
             it.insert(dto)
         }
+        realm.close()
         completion.invoke()
     }
 
     override fun saveStuck(addressId: String, stucks: List<Stuck>, completion: () -> Unit) {
-        realm?.executeTransaction {
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
             val list = stucks.map { entity ->
                 DbStuck().apply {
                     this.id = genId()
@@ -44,79 +47,72 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
             }
             it.insert(list)
         }
+        realm.close()
         completion.invoke()
     }
 
     override fun deleteAddress(addressId: String, completion: () -> Unit) {
-        realm?.executeTransaction {
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
             val list = it.where<DbAddress>()
                 .equalTo("id", addressId)
                 .findAll()
             list.deleteAllFromRealm()
         }
+        realm.close()
         completion.invoke()
     }
 
     override fun deleteStuck(addressId: String, completion: () -> Unit) {
-        realm?.executeTransaction {
+        val realm = Realm.getDefaultInstance()
+        realm.executeTransaction {
             val list = it.where<DbStuck>()
                 .equalTo("addressId", addressId)
                 .findAll()
             list.deleteAllFromRealm()
         }
+        realm.close()
         completion.invoke()
     }
 
     override fun getAddress(addressId: String): Address? {
-        realm?.run {
+        val realm = Realm.getDefaultInstance()
+        realm.run {
             val output = this.where<DbAddress>()
                 .equalTo("id", addressId)
                 .findFirst()
+            realm.close()
             return output?.toEntity()
         }
+        realm.close()
         return null
     }
 
     override fun getAllAddress(): List<Address> {
-        realm?.run {
+        val realm = Realm.getDefaultInstance()
+        realm.run {
             val addresses = where<DbAddress>()
                 .alwaysTrue()
                 .findAll()
                 .map { it.toEntity() }
+            realm?.close()
             return addresses
         }
+        realm.close()
         return emptyList()
     }
 
     override fun getLastestStuck(addressId: String): List<Stuck> {
+        val realm = Realm.getDefaultInstance()
         realm?.run {
-            return where<DbStuck>()
+            val output = where<DbStuck>()
                 .equalTo("addressId", addressId)
                 .findAll().map { it.toEntity() }
+            realm?.close()
+            return output
         }
+        realm?.close()
         return emptyList()
-    }
-
-    fun printPreviousLog() {
-        realm?.executeTransaction { realm ->
-            val size = realm.where<Log>().alwaysTrue().findAll().size
-            android.util.Log.w("com.example.ketxe.view.home.RealmDBService", "size = $size")
-            if(size == 0) {
-                return@executeTransaction
-            }
-            realm.where<Log>().alwaysTrue().findAll().takeLast(1).last()?.let {
-                android.util.Log.w("com.example.ketxe.view.home.RealmDBService", "--- PreviousLog At = ${it.time}")
-//                log("--- PreviousLog At = ${it.time}")
-            }
-        }
-    }
-
-    fun saveLog(msg: String) {
-        realm?.executeTransaction { realm ->
-            val log = Log()
-            log.message = msg
-            realm.insert(log)
-        }
     }
 }
 
@@ -169,7 +165,6 @@ fun DbAddress.toEntity() = Address(id, description, latitude, longitude)
 
 fun genId(): String {
     val id = UUID.randomUUID().toString()
-    println("New ID = $id")
     return id
 }
 

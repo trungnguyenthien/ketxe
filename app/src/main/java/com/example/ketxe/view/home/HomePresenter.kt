@@ -39,7 +39,7 @@ interface HomeView {
     fun renderClosedRoadLines(closeRoad: List<Stuck>)
 }
 
-data class HomeAddressRow(val address: Address, val serious: Int, val noSerious: Int)
+data class HomeAddressRow(val address: Address, val result: AnalyseResult)
 
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
@@ -129,13 +129,10 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         list.forEach { address ->
             val addressId = address.id ?: ""
             val stucks = dbService.getLastestStuck(addressId)
-            val serious = stucks.filter { it.severity == StuckSeverity.Serious }.size
-            val noSerious = stucks.filter { it.severity != StuckSeverity.Serious }.size
-            val row = HomeAddressRow(address, serious, noSerious)
+            val row = HomeAddressRow(address, analyse(stucks))
             rows.add(row)
         }
         completion.invoke(rows)
-
     }
 
     override fun onPause(time: Int) { }
