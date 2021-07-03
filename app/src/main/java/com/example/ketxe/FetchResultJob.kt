@@ -1,6 +1,5 @@
 package com.example.ketxe
 
-import android.R
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.example.ketxe.entity.Resources
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
@@ -34,18 +32,14 @@ class FetchResultJob(val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchAllAddress(db: RealmDBService) {
-        db.getAllAddress { list ->
-//            log("will fetchList size = ${list.size}")
-            list.forEach { address ->
-//                log("will fetch address = ${address.description}")
-            processForEach(address, completion = {
-//                log("Fetch address = ${address.description}")
-            })
-        }}
+        db.getAllAddress().forEach { address ->
+            processForEach(address)
+        }
     }
+
     private val api = TrafficBingServiceImpl()
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun processForEach(address: Address, completion: (List<Resources>) -> Unit) {
+    private fun processForEach(address: Address) {
         val ll = LatLng(address.lat.toDouble(), address.lon.toDouble())
         api.request(ll, radius = 5.0, completion = { resources ->
             save(address, resources)

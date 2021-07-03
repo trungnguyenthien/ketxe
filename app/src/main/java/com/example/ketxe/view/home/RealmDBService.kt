@@ -2,7 +2,6 @@ package com.example.ketxe.view.home
 
 import android.app.Application
 import android.content.Context
-import com.example.ketxe.MyJobService
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmObject
@@ -62,23 +61,33 @@ open class RealmDBService(val realm: Realm? = globalRealm): DataService {
         completion.invoke()
     }
 
-    override fun getAllAddress(completion: (List<Address>) -> Unit) {
-        realm?.let { realm ->
-            var list = realm.where<DbAddress>()
+    override fun getAddress(addressId: String): Address? {
+        realm?.run {
+            val output = this.where<DbAddress>()
+                .equalTo("addressId", addressId)
+                .findFirst()
+            return output?.toEntity()
+        }
+        return null
+    }
+
+    override fun getAllAddress(): List<Address> {
+        realm?.run {
+            return where<DbAddress>()
                 .alwaysTrue()
                 .findAll()
                 .map { it.toEntity() }
-            completion.invoke(list)
         }
+        return emptyList()
     }
 
-    override fun getLastestStuck(addressId: String, completion: (List<Stuck>) -> Unit) {
-        realm?.let { realm ->
-            var list = realm.where<DbStuck>()
+    override fun getLastestStuck(addressId: String): List<Stuck> {
+        realm?.run {
+            return where<DbStuck>()
                 .equalTo("addressId", addressId)
                 .findAll().map { it.toEntity() }
-            completion.invoke(list)
         }
+        return emptyList()
     }
 
     fun printPreviousLog() {

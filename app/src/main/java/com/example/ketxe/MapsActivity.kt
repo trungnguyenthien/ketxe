@@ -2,7 +2,6 @@ package com.example.ketxe
 
 import android.Manifest
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -10,7 +9,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -27,10 +25,6 @@ import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.navigation.NavigationView
-import io.realm.Realm
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 
 
 class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchListener {
@@ -110,7 +104,7 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
             val lat = intent.extras?.get("lat") as Float
             val lon = intent.extras?.get("lon") as Float
             ggMyMapFragment.setInitalizeMarker(lat = lat, lon = lon)
-            presenter.didOpenFromNotification(addressId = addressId)
+            presenter.onOpenFromNotification(addressId = addressId)
         }
 
         hideLoadingIndicator()
@@ -211,9 +205,11 @@ class MapsActivity : AppCompatActivity(), HomeView, RecyclerView.OnItemTouchList
         dialog.show()
     }
 
-    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean = false
+    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean = true
 
-    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+    override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {
+        print("")
+    }
 
     override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
 }

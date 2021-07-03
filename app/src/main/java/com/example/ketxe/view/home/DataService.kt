@@ -42,7 +42,8 @@ interface DataService {
     fun deleteAddress(addressId: String, completion: () -> Unit)
     fun deleteStuck(addressId: String, completion: () -> Unit)
 
-    fun getAllAddress(completion: (List<Address>) -> Unit)
-    fun getLastestStuck(addressId: String, completion: (List<Stuck>) -> Unit)
+    fun getAddress(addressId: String): Address?
+    fun getAllAddress(): List<Address>
+    fun getLastestStuck(addressId: String): List<Stuck>
 }
 

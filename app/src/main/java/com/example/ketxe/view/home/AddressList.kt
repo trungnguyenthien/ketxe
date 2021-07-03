@@ -18,7 +18,7 @@ class AddressList(context: Context, attrs: AttributeSet?) : RecyclerView(context
 
         fun config(position: Int, item: HomeAddressRow, deleteAction: (Address) -> Unit) {
             addressText.text = item.address.description
-            infoText.text = "${item.serious} điểm kẹt xe, ${item.noSerious} điểm đông xe"
+            infoText.text = "- ${item.serious} điểm kẹt xe \n- ${item.noSerious} điểm đông xe"
             btnDelete.setOnClickListener {
                 deleteAction.invoke(item.address)
             }

@@ -20,7 +20,8 @@ interface HomePresenter: ActivityPresenter {
     fun onTapClickAddAddressButton()
     fun onSubmitAddress(addressName: String, location: LatLng)
     fun onDelete(address: Address)
-    fun didOpenFromNotification(addressId: String)
+    fun onOpenFromNotification(addressId: String)
+    fun onTapAddressOnMenu(addressId: String)
 }
 
 interface HomeView {
@@ -85,22 +86,30 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         }
     }
 
-    override fun didOpenFromNotification(addressId: String) {
-        dbService.getLastestStuck(addressId = addressId, completion = { stucks ->
+    override fun onOpenFromNotification(addressId: String) {
+        val stucks = dbService.getLastestStuck(addressId)
+        val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
+        var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
+        view.clearAllStuckMarkers()
+        view.renderSeriousStuckMarkers(seriousStucks)
+        view.renderNoSeriousStuckMarkers(noSeriousStucks)
+    }
+
+    override fun onTapAddressOnMenu(addressId: String) {
+        dbService.getAddress(addressId)?.let { address ->
+            val stucks = dbService.getLastestStuck(addressId)
             val seriousStucks = stucks.filter { it.severity == StuckSeverity.Serious }
             var noSeriousStucks = stucks.filter { it.severity != StuckSeverity.Serious }
             view.clearAllStuckMarkers()
+            view.addMarker(LatLng(address.lat.toDouble(), address.lon.toDouble()))
             view.renderSeriousStuckMarkers(seriousStucks)
             view.renderNoSeriousStuckMarkers(noSeriousStucks)
-        })
+        }
     }
 
-    override fun onStart() {
-//        TODO("Not yet implemented")
-    }
+    override fun onStart() {}
 
     override fun onResume(time: Int) {
-//        TODO("Not yet implemented")
         loadAddressRow {
             view.updateAddressList(it)
         }
@@ -108,32 +117,25 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     private fun loadAddressRow(completion: (List<HomeAddressRow>) -> Unit) {
         var rows = ArrayList<HomeAddressRow>()
-        dbService.getAllAddress { list -> list.forEach { address ->
+
+        val list = dbService.getAllAddress()
+        list.forEach { address ->
             val addressId = address.id ?: ""
-            val isLastAddress = address == list.last()
+            val stucks = dbService.getLastestStuck(addressId)
+            val serious = stucks.filter { it.severity == StuckSeverity.Serious }.size
+            val noSerious = stucks.filter { it.severity != StuckSeverity.Serious }.size
+            val row = HomeAddressRow(address, serious, noSerious)
+            rows.add(row)
+        }
+        completion.invoke(rows)
 
-            dbService.getLastestStuck(addressId = addressId, completion = { stucks ->
-                val serious = stucks.filter { it.severity == StuckSeverity.Serious }.size
-                val noSerious = stucks.filter { it.severity != StuckSeverity.Serious }.size
-                val row = HomeAddressRow(address, serious, noSerious)
-                rows.add(row)
-
-                if(isLastAddress) { completion.invoke(rows) }
-            })
-        }}
     }
 
-    override fun onPause(time: Int) {
-//        TODO("Not yet implemented")
-    }
+    override fun onPause(time: Int) { }
 
-    override fun onNoLongerVisible() {
-//        TODO("Not yet implemented")
-    }
+    override fun onNoLongerVisible() { }
 
-    override fun onDestroyBySystem() {
-//        TODO("Not yet implemented")
-    }
+    override fun onDestroyBySystem() { }
 
     private fun onSaveAddressCompletion() = runBlocking {
         delay(100)
