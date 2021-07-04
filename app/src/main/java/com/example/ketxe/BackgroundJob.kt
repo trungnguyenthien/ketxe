@@ -14,6 +14,7 @@ import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
 import java.util.*
 
+
 class BackgroundJob(val context: Context) {
     private val dbService: DataService = RealmDBService()
     private val api: TrafficService = TrafficBingService()
@@ -31,8 +32,25 @@ class BackgroundJob(val context: Context) {
         api.request(ll, radius = 5.0, completion = { resources ->
             updateStucksInDB(address, resources, completion = { address, newStucks ->
                 showNotification(address, newStucks)
+                if (allowPlaySound(newStucks)) playSound()
             })
         })
+    }
+
+    private fun allowPlaySound(stucks: List<Stuck>): Boolean {
+        val result = analyse(stucks)
+        return (result.seriousCount + result.noSeriousCount) > 0
+    }
+
+    private fun playSound() {
+        try {
+            val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val ring = RingtoneManager.getRingtone(context, notification)
+            ring.volume = 0.7F
+            ring.play()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -72,10 +90,10 @@ class BackgroundJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun showNotification(address: Address, stucks: List<Stuck>) {
         val result = analyse(stucks)
-        val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val vibratePattern = longArrayOf(0, 250, 100, 250)
 
         val mBuilder = NotificationCompat.Builder(context, "channelID")
+            .setDefaults(Notification.DEFAULT_SOUND)
             .setSmallIcon(R.drawable.image_address_map_icon) // notification icon
             .setContentTitle("🔴 Khu vực [${address.description}]") // title for notification
             .setContentText(makeMessage(result)) // message for notification
@@ -83,7 +101,6 @@ class BackgroundJob(val context: Context) {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setVibrate(vibratePattern)
-            .setSound(alarmSound)
             .setGroup("ketxe")
             .setContentIntent(makeIntent(address))
             .setStyle(NotificationCompat.BigTextStyle().bigText(makeMessage(result)))
