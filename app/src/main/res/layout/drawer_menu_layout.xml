@@ -5,18 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-<!--    <Button-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:id="@+id/button1"-->
-<!--        style="@style/Widget.AppCompat.Button.Colored"-->
-<!--        android:text="Them Thong Bao"-->
-<!--        />-->
+
     <view class="com.example.ketxe.view.home.AddressList"
         android:id="@+id/listview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_weight="1"
+        android:layout_height="0dp">
     </view>
 
+    <Button
+        android:id="@+id/btn_stop"
+        android:layout_width="match_parent"
+        android:backgroundTint="#F44336"
+        android:text="Tắt service"
+        android:layout_height="50dp" />
 
+    <Button
+        android:id="@+id/btn_start"
+        android:layout_width="match_parent"
+        android:backgroundTint="#4CAF50"
+        android:text="Khởi động service"
+        android:layout_height="50dp" />
 </LinearLayout>

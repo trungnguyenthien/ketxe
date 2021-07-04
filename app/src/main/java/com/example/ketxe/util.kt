@@ -1,8 +1,8 @@
 package com.example.ketxe
 
 
-import android.Manifest
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat

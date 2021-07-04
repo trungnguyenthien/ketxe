@@ -24,11 +24,19 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 
- class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener {
+class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener {
 
     private lateinit var binding: ActivityMapsBinding
 
     private val presenter: HomePresenter = HomePresenterImpl(this)
+
+    private val startServiceButton: Button by lazy {
+        findViewById<Button>(R.id.btn_start)
+    }
+
+    private val stopServiceButton: Button by lazy {
+        findViewById<Button>(R.id.btn_stop)
+    }
 
     private val drawerLayout: DrawerLayout by lazy {
         findViewById<DrawerLayout>(R.id.my_drawer_layout)
@@ -104,6 +112,17 @@ import com.google.android.gms.maps.model.LatLng
             presenter.onTapAddAddressButton()
         }
 
+        startServiceButton.setOnClickListener {
+            presenter.onTapStartServiceButton()
+        }
+
+        stopServiceButton.setOnClickListener {
+            presenter.onTapStopServiceButton()
+        }
+
+        startServiceButton.visibility = View.GONE
+        stopServiceButton.visibility = View.GONE
+
         var addressFromNotif = intent.extras?.get("address") as? String
         addressFromNotif?.let { addressId ->
             val lat = intent.extras?.get("lat") as Float
@@ -113,22 +132,6 @@ import com.google.android.gms.maps.model.LatLng
         }
 
         hideLoadingIndicator()
-        startServiceIfNeed()
-    }
-
-    private fun startServiceIfNeed() {
-        if(isGranted(Manifest.permission.FOREGROUND_SERVICE)) {
-            MyJobService.startJob(this)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        startServiceIfNeed()
     }
 
     private var onResumeCount = 0
@@ -167,18 +170,41 @@ import com.google.android.gms.maps.model.LatLng
         drawerLayout.closeDrawers()
     }
 
-     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {
-         ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
-     }
+    override fun startService() {
+        if (isGranted(Manifest.permission.FOREGROUND_SERVICE)) {
+            MyJobService.startJob(this)
+        }
+    }
 
-     private val ggMyMapFragment: MyMapFragment by lazy {
+    override fun stopService() {
+        MyJobService.stopJob(this)
+    }
+
+    override fun updateStartStopServiceButton(isStart: Boolean) {
+        if(isStart) {
+            startServiceButton.visibility = View.VISIBLE
+            stopServiceButton.visibility = View.GONE
+        } else {
+            startServiceButton.visibility = View.GONE
+            stopServiceButton.visibility = View.VISIBLE
+        }
+    }
+
+    override fun renderClosedRoadLines(closeRoad: List<Stuck>) {
+        ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
+    }
+
+    private val ggMyMapFragment: MyMapFragment by lazy {
         MyMapFragment()
     }
 
     private fun replaceFragment(fragment: Fragment) {
         val fragmentManger = supportFragmentManager
         val transaction = fragmentManger.beginTransaction()
-        transaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+        transaction.setCustomAnimations(
+            android.R.anim.slide_in_left,
+            android.R.anim.slide_out_right
+        )
         transaction.replace(R.id.main_fragment_container, fragment)
         transaction.commit()
     }
@@ -218,21 +244,25 @@ import com.google.android.gms.maps.model.LatLng
         dialog.show()
     }
 
-     override fun onDrawerSlide(drawerView: View, slideOffset: Float) { }
+    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
 
-     override fun onDrawerOpened(drawerView: View) {
+    override fun onDrawerOpened(drawerView: View) {
         presenter.onOpenAddressList()
-     }
+    }
 
-     override fun onDrawerClosed(drawerView: View) { }
+    override fun onDrawerClosed(drawerView: View) {}
 
-     override fun onDrawerStateChanged(newState: Int) { }
- }
+    override fun onDrawerStateChanged(newState: Int) {}
+}
 
 fun requestTrafficPermission(activity: Activity, code: Int) {
     PermissionRequester(
         activity = activity,
-        permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.FOREGROUND_SERVICE),
+        permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.FOREGROUND_SERVICE
+        ),
         requestCode = code
     ).requestIfNeed()
 }

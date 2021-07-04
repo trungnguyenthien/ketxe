@@ -18,6 +18,7 @@ class AddressList(context: Context, attrs: AttributeSet?) : RecyclerView(context
         private val seriousText: TextView by lazy { itemView.findViewById<TextView>(R.id.serious_text) }
         private val noSeriousText: TextView by lazy { itemView.findViewById<TextView>(R.id.noSerious_text) }
         private val btnDelete: ImageButton by lazy { itemView.findViewById<ImageButton>(R.id.btn_remove_address) }
+        
         fun config(item: HomeAddressRow,
                    deleteAction: (Address) -> Unit,
                    clickAction: (Address) -> Unit

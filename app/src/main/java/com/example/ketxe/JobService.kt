@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
@@ -24,7 +25,7 @@ fun log(msg: String) {
 }
 
 class MyJobService: Service() {
-    var onJob = false
+    private var onJob = false
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun job() {
@@ -38,6 +39,16 @@ class MyJobService: Service() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return if(intent?.action == "START") {
+            KeyValueStorage(this).setIsBackgroundServiceRunning(true)
+            onStart()
+        } else {
+            KeyValueStorage(this).setIsBackgroundServiceRunning(false)
+            onStop(startId)
+        }
+    }
+
+    private fun onStart(): Int {
         val channelId = createNotificationChannel(this, "channelID", "channelName")
         val notificationBuilder = NotificationCompat.Builder(this, channelId )
         val notification = notificationBuilder.setOngoing(true)
@@ -48,7 +59,18 @@ class MyJobService: Service() {
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
         startForeground(101, notification)
+        return START_STICKY
+    }
+
+    private fun onStop(startId: Int): Int {
+        stopForeground(true);
+        stopSelfResult(startId);
         return START_NOT_STICKY
+    }
+
+    private fun clearAllNotification() {
+        val notificationManager = getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancelAll()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -57,12 +79,15 @@ class MyJobService: Service() {
         if (!onJob) {
             Thread { job() }.start()
             onJob = true
+            KeyValueStorage(this).setIsBackgroundServiceRunning(true)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         onJob = false
+        clearAllNotification()
+        KeyValueStorage(this).setIsBackgroundServiceRunning(false)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -70,6 +95,13 @@ class MyJobService: Service() {
     companion object {
         fun startJob(context: Context) {
             val myServiceIntent = Intent(context, MyJobService::class.java)
+            myServiceIntent.action = "START"
+            ContextCompat.startForegroundService(context, myServiceIntent)
+        }
+
+        fun stopJob(context: Context) {
+            val myServiceIntent = Intent(context, MyJobService::class.java)
+            myServiceIntent.action = "STOP"
             ContextCompat.startForegroundService(context, myServiceIntent)
         }
     }

@@ -1,6 +1,7 @@
 package com.example.ketxe.view.home
 
 import android.app.Activity
+import com.example.ketxe.KeyValueStorage
 import com.google.android.gms.maps.model.LatLng
 
 interface ActivityPresenter {
@@ -24,6 +25,10 @@ interface HomePresenter: ActivityPresenter {
     fun onTapItemOnAddressList(addressId: String)
     /// Sự kiện khi user mở AddressList
     fun onOpenAddressList()
+    /// Sự kiện khi user tap vào button "Khởi động service"
+    fun onTapStartServiceButton()
+    /// Sự kiện khi user tap vào button "Tắt service"
+    fun onTapStopServiceButton()
 }
 
 interface HomeView {
@@ -51,6 +56,12 @@ interface HomeView {
     fun renderClosedRoadLines(closeRoad: List<Stuck>)
     /// Đóng AddressList.
     fun closeAddressList()
+    /// Khởi động service
+    fun startService()
+    /// Tắt service
+    fun stopService()
+    /// Cập nhật trạng thái hiển thị Start/Stop button
+    fun updateStartStopServiceButton(isStart: Boolean)
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -126,7 +137,20 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         }
     }
 
-    override fun onOpenAddressList() = reloadAddressList()
+    override fun onOpenAddressList() {
+        reloadAddressList()
+        val isStop = KeyValueStorage(view.activity()).isBackgroundServiceRunning
+        view.updateStartStopServiceButton(!isStop)
+    }
+    override fun onTapStartServiceButton() {
+        view.startService()
+        view.closeAddressList()
+    }
+
+    override fun onTapStopServiceButton() {
+        view.stopService()
+        view.closeAddressList()
+    }
 
     override fun onResume(time: Int) = reloadAddressList()
 
