@@ -15,7 +15,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 
 interface MyLocationService {
-    fun request(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit)
+    fun startRequest(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit)
     fun stopRequest()
 }
 
@@ -23,6 +23,8 @@ class MyLocationRequester(): MyLocationService {
     private var onStopHandler: (() -> Unit)? = null
     private var onSuccessHandler: ((Location) -> Unit)? = null
     private var activity: Activity? = null
+    private var callback: LocationCallback? = null
+
     val fusedLocationProviderClient: FusedLocationProviderClient by lazy { FusedLocationProviderClient(activity!!) }
 
     private fun start() {
@@ -32,31 +34,29 @@ class MyLocationRequester(): MyLocationService {
     }
 
     private fun requestLocationSetting() {
-        activity?.let {
-            AlertDialog.Builder(it)
+        activity?.run {
+            AlertDialog.Builder(this)
                 .setMessage("Enable GPS")
                 .setCancelable(false)
                 .setPositiveButton("Yes") { dialog, which ->
-                    activity!!.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    stopRequest()
                 }.setNegativeButton("No") { dialog, which ->
                     dialog.cancel()
+                    stopRequest()
                 }.create().show()
         }
     }
 
-    private fun dontGrant(permission: String): Boolean =
-        activity?.let { ActivityCompat.checkSelfPermission(it, permission) } != PackageManager.PERMISSION_GRANTED
-
-    private var callback: LocationCallback? = null
-
     @SuppressLint("MissingPermission")
     private fun requestMyLocation() {
         if (dontGrant(Manifest.permission.ACCESS_FINE_LOCATION) && dontGrant(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            stopRequest()
             return
         }
 
         val request = LocationRequest()
-        request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        request.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
         request.interval = 100
         request.fastestInterval = 100
         request.smallestDisplacement = 1F
@@ -64,18 +64,15 @@ class MyLocationRequester(): MyLocationService {
         callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult?) {
                 super.onLocationResult(result)
-                result?.run {
-                    onSuccessHandler?.invoke(result.locations.last())
-                    onStopHandler?.invoke()
-                    fusedLocationProviderClient.removeLocationUpdates(callback)
-                }
+                result?.let { onSuccessHandler?.invoke(it.locations.last()) }
+                stopRequest()
             }
         }
 
         fusedLocationProviderClient.requestLocationUpdates(request, callback, null)
     }
 
-    override fun request(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit) {
+    override fun startRequest(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit) {
         this.activity = activity
         onStopHandler = onStop
         onSuccessHandler = onSuccess
@@ -84,9 +81,18 @@ class MyLocationRequester(): MyLocationService {
     }
 
     override fun stopRequest() {
-        callback?.run {
-            fusedLocationProviderClient.removeLocationUpdates(callback)
-            onStopHandler?.invoke()
-        }
+        callback?.let { fusedLocationProviderClient.removeLocationUpdates(it) }
+        onStopHandler?.invoke()
+        resetVar()
     }
+
+    private fun resetVar() {
+        activity = null
+        onStopHandler = null
+        onSuccessHandler = null
+        callback = null
+    }
+
+    private fun dontGrant(permission: String): Boolean =
+        activity?.let { ActivityCompat.checkSelfPermission(it, permission) } != PackageManager.PERMISSION_GRANTED
 }

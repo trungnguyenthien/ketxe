@@ -67,3 +67,27 @@ fun Date.SECOND(): Int {
     cal.time = this
     return cal.get(Calendar.SECOND)
 }
+
+fun Date.DAY_OF_MONTH(): Int {
+    val cal = Calendar.getInstance()
+    cal.time = this
+    return cal.get(Calendar.DAY_OF_MONTH)
+}
+
+fun Date.DAY_OF_WEEK(): Int {
+    val cal = Calendar.getInstance()
+    cal.time = this
+    return cal.get(Calendar.DAY_OF_WEEK)
+}
+
+fun Date.MONTH(): Int {
+    val cal = Calendar.getInstance()
+    cal.time = this
+    return cal.get(Calendar.MONTH)
+}
+
+fun Date.YEAR(): Int {
+    val cal = Calendar.getInstance()
+    cal.time = this
+    return cal.get(Calendar.YEAR)
+}

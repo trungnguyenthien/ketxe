@@ -71,7 +71,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var dbService: DataService = RealmDBService()
 
     override fun onTapMyLocationButton() {
-        myLocService.request(view.activity(),
+        myLocService.startRequest(view.activity(),
             onStart = {
                 view.showLoadingIndicator(message = "Chờ chút nha, mình đang dò tìm location của bạn...")
             }, onStop = {
