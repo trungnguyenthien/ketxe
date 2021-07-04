@@ -37,7 +37,6 @@
             android:id="@+id/closeRoad_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:textColor="@color/closeRoadLine"
             android:textStyle="italic" />
 
@@ -45,7 +44,6 @@
             android:id="@+id/serious_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:textColor="@color/seriousLine"
             android:textStyle="italic" />
 
@@ -53,11 +51,8 @@
             android:id="@+id/noSerious_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:textColor="@color/noSeriousLine"
             android:textStyle="italic" />
-
-
     </LinearLayout>
 
     <ImageButton

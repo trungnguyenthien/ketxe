@@ -114,16 +114,16 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     }
 
     private fun loadAddressRow(completion: (List<HomeAddressRow>) -> Unit) {
-        val rows = ArrayList<HomeAddressRow>()
+        val outputRows = ArrayList<HomeAddressRow>()
 
         val list = dbService.getAllAddress()
         list.forEach { address ->
             val addressId = address.id ?: ""
             val stucks = dbService.getLastestStuck(addressId)
             val row = HomeAddressRow(address, analyse(stucks))
-            rows.add(row)
+            outputRows.add(row)
         }
-        completion.invoke(rows)
+        completion.invoke(outputRows)
     }
 
     private fun onSaveAddressCompletion() = runBlocking {
