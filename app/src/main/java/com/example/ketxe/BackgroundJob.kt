@@ -15,26 +15,19 @@ import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun realmDBService(): RealmDBService {
-    return RealmDBService()
-}
+class BackgroundJob(val context: Context) {
+    private val dbService: DataService = RealmDBService()
+    private val api: TrafficService = TrafficBingService()
 
-class FetchResultJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun run() {
-        fetchAllAddress()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun fetchAllAddress() {
-        realmDBService().getAllAddress().forEach { address ->
-            processForEach(address)
+        dbService.getAllAddress().forEach { address ->
+            process(address)
         }
     }
 
-    private val api = TrafficBingServiceImpl()
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun processForEach(address: Address) {
+    private fun process(address: Address) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
         api.request(ll, radius = 5.0, completion = { resources ->
             save(address, resources)
@@ -44,7 +37,7 @@ class FetchResultJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun save(address: Address, resources: List<Resources>) {
         val addressId = address.id ?: ""
-        realmDBService().deleteStuck(addressId = addressId, completion = {
+        dbService.deleteStuck(addressId = addressId, completion = {
             val newStucks = resources.filter {
                 val startTime = toDate(it.start)
                 val now = Date()
@@ -68,7 +61,8 @@ class FetchResultJob(val context: Context) {
                     title = it.title ?: "---"
                 )
             }
-            realmDBService().saveStuck(addressId = addressId, stucks = newStucks, completion = {
+
+            dbService.saveStuck(addressId = addressId, stucks = newStucks, completion = {
                 notifyStuck(address = address, stucks = newStucks)
             })
         })

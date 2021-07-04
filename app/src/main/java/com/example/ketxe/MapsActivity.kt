@@ -24,7 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 
- class MapsActivity : AppCompatActivity(), HomeView {
+ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener {
 
     private lateinit var binding: ActivityMapsBinding
 
@@ -57,12 +57,12 @@ import com.google.android.gms.maps.model.LatLng
     }
 
     private fun onDelete(address: Address) {
-        presenter.onDelete(address = address)
+        presenter.onTapDeleteButtonOnAddressList(address = address)
     }
 
     private fun onClickAddressOnList(address: Address) {
         address.id?.let { addressId ->
-            presenter.onTapAddressOnMenu(addressId = addressId)
+            presenter.onTapItemOnAddressList(addressId = addressId)
         }
     }
 
@@ -83,6 +83,8 @@ import com.google.android.gms.maps.model.LatLng
         setContentView(binding.root)
         drawerLayout.addDrawerListener(actionBarDrawerToggle)
         actionBarDrawerToggle.syncState()
+
+        drawerLayout.addDrawerListener(this)
         // Show menu button at left navigationBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -90,16 +92,16 @@ import com.google.android.gms.maps.model.LatLng
 
         ggMyMapFragment.onClickAddMarkerButton = {
             ggMyMapFragment.centerLocation()?.let {
-                presenter.onTapAddMarker(it)
+                presenter.onTapAddMarkerButton(it)
             }
         }
 
         ggMyMapFragment.onClickMyLocationButton = {
-            presenter.onTapMyLocation()
+            presenter.onTapMyLocationButton()
         }
 
         ggMyMapFragment.onClickAddAddressButton = {
-            presenter.onTapClickAddAddressButton()
+            presenter.onTapAddAddressButton()
         }
 
         var addressFromNotif = intent.extras?.get("address") as? String
@@ -137,7 +139,7 @@ import com.google.android.gms.maps.model.LatLng
 
     override fun activity(): Activity = this
 
-    override fun addMarker(latLng: LatLng) {
+    override fun addMarkerOnMap(latLng: LatLng) {
         ggMyMapFragment.addMarker(lat = latLng.latitude, lng = latLng.longitude)
     }
 
@@ -149,7 +151,7 @@ import com.google.android.gms.maps.model.LatLng
         reloadData(list)
     }
 
-    override fun clearAllStuckMarkers() {
+    override fun clearAllStuckLines() {
         ggMyMapFragment.clearAllStuckPolygon()
     }
 
@@ -199,7 +201,7 @@ import com.google.android.gms.maps.model.LatLng
         loadingLayout.visibility = View.INVISIBLE
     }
 
-    override fun showInputAddressName() {
+    override fun showInputDialogAddressName() {
         val taskEditText = EditText(this)
         val dialog = AlertDialog.Builder(this)
             .setTitle("Giải pháp tránh Kẹt xe")
@@ -215,7 +217,17 @@ import com.google.android.gms.maps.model.LatLng
             .create()
         dialog.show()
     }
-}
+
+     override fun onDrawerSlide(drawerView: View, slideOffset: Float) { }
+
+     override fun onDrawerOpened(drawerView: View) {
+        presenter.onOpenAddressList()
+     }
+
+     override fun onDrawerClosed(drawerView: View) { }
+
+     override fun onDrawerStateChanged(newState: Int) { }
+ }
 
 fun requestTrafficPermission(activity: Activity, code: Int) {
     PermissionRequester(

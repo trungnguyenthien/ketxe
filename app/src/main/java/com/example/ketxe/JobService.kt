@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.app.job.JobScheduler
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -14,10 +13,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.example.ketxe.view.home.RealmDBService
-import io.realm.Realm
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 
 //https://medium.com/@jayd1992/foreground-services-in-android-e131a863a33d
 //https://github.com/jeetdholakia/ServicesAndBackgroundTasks/blob/master/app/src/main/java/dev/jeetdholakia/servicesandbackgroundtasks/foregroundservices/MyForegroundService.kt
@@ -35,7 +30,7 @@ class MyJobService: Service() {
     private fun job() {
         while (onJob) {
             log("===============================")
-            val job = FetchResultJob(this)
+            val job = BackgroundJob(this)
             job.run()
             Thread.sleep(20 * 1000)
         }

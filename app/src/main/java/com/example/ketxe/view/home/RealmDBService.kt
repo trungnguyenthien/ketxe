@@ -9,7 +9,7 @@ import io.realm.annotations.PrimaryKey
 import io.realm.kotlin.where
 import java.util.*
 
-open class RealmDBService(): DataService {
+open class RealmDBService : DataService {
     override fun saveAddress(address: Address, completion: () -> Unit) {
         val realm = Realm.getDefaultInstance()
         realm.executeTransaction {
@@ -116,11 +116,6 @@ open class RealmDBService(): DataService {
     }
 }
 
-open class Log: RealmObject() {
-    var time: Date = Date()
-    var message: String = ""
-}
-
 open class DbAddress : RealmObject() {
     @PrimaryKey var id: String = ""
     var description: String = ""
@@ -159,7 +154,6 @@ fun DbStuck.toEntity() = Stuck(
     stuckType(type),
     title
 )
-
 
 fun DbAddress.toEntity() = Address(id, description, latitude, longitude)
 

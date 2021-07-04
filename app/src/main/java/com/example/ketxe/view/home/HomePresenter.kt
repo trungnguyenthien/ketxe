@@ -2,36 +2,55 @@ package com.example.ketxe.view.home
 
 import android.app.Activity
 import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 
 interface ActivityPresenter {
     fun onResume(time: Int)
 }
 
 interface HomePresenter: ActivityPresenter {
-    fun onTapMyLocation()
-    fun onTapAddMarker(mapLocation: LatLng)
-    fun onTapClickAddAddressButton()
+    /// Sự kiện khi user tap vào button Dò Tìm Location
+    fun onTapMyLocationButton()
+    /// Sự kiện khi user tap vào button Add Marker (gắn marker đỏ vào map)
+    fun onTapAddMarkerButton(mapLocation: LatLng)
+    /// Sự kiện khi user tap vào button Add Address (thêm toạ độ của marker vào danh sách)
+    fun onTapAddAddressButton()
+    /// Sự kiện khi user chọn "Đồng Ý", sau khi nhập tên
     fun onSubmitAddress(addressName: String, location: LatLng)
-    fun onDelete(address: Address)
+    /// Sự kiện khi user tap button Delete trong AddressList
+    fun onTapDeleteButtonOnAddressList(address: Address)
+    /// Sự kiện khi ứng dụng được open khi user chọn notification
     fun onOpenFromNotification(addressId: String)
-    fun onTapAddressOnMenu(addressId: String)
+    /// Sự kiện khi user tap vào item (address) trong AddressList
+    fun onTapItemOnAddressList(addressId: String)
+    /// Sự kiện khi user mở AddressList
+    fun onOpenAddressList()
 }
 
 interface HomeView {
+    /// Cung cấp đối tượng activity cho presenter
     fun activity(): Activity
-    fun addMarker(latLng: LatLng)
-    fun showInputAddressName()
+    /// Thêm marker vào Map
+    fun addMarkerOnMap(latLng: LatLng)
+    /// Hiển thị dialog để user nhập Address name.
+    fun showInputDialogAddressName()
+    /// Hiển thị loading indicator
     fun showLoadingIndicator(message: String)
+    /// Tắt loading indicator.
     fun hideLoadingIndicator()
+    /// Di chuyển camera (góc nhìn) trên map đến location khác.
     fun moveMapCamera(latlng: LatLng)
+    /// Cập nhật lại AddressList.
     fun updateAddressList(list: List<HomeAddressRow>)
-    fun clearAllStuckMarkers()
+    /// Xoá các đoạn đường bị kẹt xe hiện tại trên map.
+    fun clearAllStuckLines()
+    /// Vẽ các đoạn đường bị kẹt NGHIÊM TRỌNG.
     fun renderSeriousStuckLines(seriousStucks: List<Stuck>)
+    /// Vẽ các đoạn đường bị kẹt KHÔNG NGHIÊM TRỌNG.
     fun renderNoSeriousStuckLines(noSeriousStucks: List<Stuck>)
-    fun closeAddressList()
+    /// Vẽ các đoạn đường bị CHẶN
     fun renderClosedRoadLines(closeRoad: List<Stuck>)
+    /// Đóng AddressList.
+    fun closeAddressList()
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -40,7 +59,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var myLocService: MyLocationService = MyLocationRequester()
     private var dbService: DataService = RealmDBService()
 
-    override fun onTapMyLocation() {
+    override fun onTapMyLocationButton() {
         myLocService.request(view.activity(),
             onStart = {
                 view.showLoadingIndicator(message = "Chờ chút nha, mình đang dò tìm location của bạn...")
@@ -52,31 +71,31 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         )
     }
 
-    override fun onTapAddMarker(mapLocation: LatLng) {
-        view.addMarker(LatLng(mapLocation.latitude, mapLocation.longitude))
+    override fun onTapAddMarkerButton(mapLocation: LatLng) {
+        view.addMarkerOnMap(LatLng(mapLocation.latitude, mapLocation.longitude))
     }
 
-    override fun onTapClickAddAddressButton() {
-        view.showInputAddressName()
+    override fun onTapAddAddressButton() {
+        view.showInputDialogAddressName()
     }
 
     override fun onSubmitAddress(addressName: String, location: LatLng) {
-        dbService.saveAddress(Address(
+        val newAddress = Address(
             id = null,
             description = addressName,
             lat = location.latitude.toFloat(),
             lng = location.longitude.toFloat()
-        ) ,completion = {
-            onSaveAddressCompletion()
+        )
+
+        dbService.saveAddress(newAddress, completion = {
+            reloadAddressList()
         })
     }
 
-    override fun onDelete(address: Address) {
+    override fun onTapDeleteButtonOnAddressList(address: Address) {
         address.id?.let { id ->
             dbService.deleteAddress(addressId = id, completion = {
-                loadAddressRow {
-                    view.updateAddressList(it)
-                }
+                reloadAddressList()
             })
         }
     }
@@ -84,21 +103,21 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onOpenFromNotification(addressId: String) {
         val stucks = dbService.getLastestStuck(addressId)
         val analyseResult = analyse(stucks)
-        view.clearAllStuckMarkers()
+        view.clearAllStuckLines()
         view.renderClosedRoadLines(analyseResult.closesRoads)
         view.renderSeriousStuckLines(analyseResult.serious)
         view.renderNoSeriousStuckLines(analyseResult.noSerious)
     }
 
-    override fun onTapAddressOnMenu(addressId: String) {
+    override fun onTapItemOnAddressList(addressId: String) {
         dbService.getAddress(addressId)?.let { address ->
             val stucks = dbService.getLastestStuck(addressId)
             val analyseResult = analyse(stucks)
 
             val location = LatLng(address.lat.toDouble(), address.lng.toDouble())
 
-            view.clearAllStuckMarkers()
-            view.addMarker(location)
+            view.clearAllStuckLines()
+            view.addMarkerOnMap(location)
             view.moveMapCamera(location)
             view.renderClosedRoadLines(analyseResult.closesRoads)
             view.renderSeriousStuckLines(analyseResult.serious)
@@ -107,11 +126,9 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         }
     }
 
-    override fun onResume(time: Int) {
-        loadAddressRow {
-            view.updateAddressList(it)
-        }
-    }
+    override fun onOpenAddressList() = reloadAddressList()
+
+    override fun onResume(time: Int) = reloadAddressList()
 
     private fun loadAddressRow(completion: (List<HomeAddressRow>) -> Unit) {
         val outputRows = ArrayList<HomeAddressRow>()
@@ -126,8 +143,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         completion.invoke(outputRows)
     }
 
-    private fun onSaveAddressCompletion() = runBlocking {
-        delay(100)
+    private fun reloadAddressList() {
         loadAddressRow {
             view.updateAddressList(it)
         }
@@ -135,14 +151,15 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 }
 
 data class AnalyseResult(
-    var closesRoads: List<Stuck>,
-    var serious: List<Stuck>,
-    var noSerious: List<Stuck>,
-    var closesRoadsCount: Int,
-    var seriousCount: Int,
-    var noSeriousCount: Int
+    var closesRoads: List<Stuck>,   /// Các đoạn đường bị chặn (bởi cơ quan chức năng)
+    var serious: List<Stuck>,       /// Các đoạn đường bị kẹt nghiêm trọng.
+    var noSerious: List<Stuck>,     /// Các đoạn đường bị kẹt KHÔNG nghiêm trọng.
+    var closesRoadsCount: Int,      /// Số đoạn đường bị chặn.
+    var seriousCount: Int,          /// Số đoạn đường bị kẹt Nghiêm trọng.
+    var noSeriousCount: Int         /// Số đoạn đường bị kẹt KHÔNG Nghiêm trọng.
 )
 
+/// Phân loại các điểm kẹt xe.
 fun analyse(stucks: List<Stuck>): AnalyseResult {
     val distinctStucks = stucks.distinctBy { it.title }
 

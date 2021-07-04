@@ -52,6 +52,7 @@ enum class StuckType(val code: Int) {
     Weather(11)
 }
 
+/// Convert code thành kiểu `StuckType`
 fun stuckType(code: Int): StuckType {
     return when(code) {
         1 -> StuckType.Accident
@@ -75,6 +76,7 @@ enum class StuckSeverity(val code: Int) {
     Serious(4)
 }
 
+/// Convert Code thành kiểu `StuckSeverity`
 fun stuckSeverity(code: Int): StuckSeverity {
     return when(code) {
         1-> StuckSeverity.LowImpact
@@ -85,14 +87,21 @@ fun stuckSeverity(code: Int): StuckSeverity {
 }
 
 interface DataService {
+    /// Save address vào database.
     fun saveAddress(address: Address, completion: () -> Unit)
+    /// Save stuck (điểm kẹt xe) vào database.
     fun saveStuck(addressId: String, stucks: List<Stuck>, completion: () -> Unit)
 
+    /// Xoá address khỏi database.
     fun deleteAddress(addressId: String, completion: () -> Unit)
+    /// Xoá stuck khỏi database.
     fun deleteStuck(addressId: String, completion: () -> Unit)
 
+    /// Lấy record Address có id tương ứng.
     fun getAddress(addressId: String): Address?
+    /// Lấy tất cả record Address.
     fun getAllAddress(): List<Address>
+    /// Lấy tất cả recode stuck liên quan đến Address.
     fun getLastestStuck(addressId: String): List<Stuck>
 }
 

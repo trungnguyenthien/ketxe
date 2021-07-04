@@ -16,11 +16,11 @@ import kotlin.math.asin
 import kotlin.math.cos
 
 
-interface TrafficBingService {
+interface TrafficService {
     fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit)
 }
 
-class TrafficBingServiceImpl: TrafficBingService {
+class TrafficBingService: TrafficService {
     override fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit) {
         val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
         val call = virtualearthAPI.incident(area.toString(), "3,4", bingKey)
