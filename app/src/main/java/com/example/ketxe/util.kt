@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
@@ -43,4 +44,10 @@ fun toDate(stringDate: String): Date {
 fun Date.simpleDateFormat(): String {
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     return sdf.format(this)
+}
+
+private val TAG = "com.example.ketxe.view.home.RealmDBService"
+
+fun log(msg: String) {
+    Log.w(TAG, msg)
 }

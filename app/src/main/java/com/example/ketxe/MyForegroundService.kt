@@ -9,7 +9,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -17,14 +16,21 @@ import androidx.core.content.ContextCompat
 
 //https://medium.com/@jayd1992/foreground-services-in-android-e131a863a33d
 //https://github.com/jeetdholakia/ServicesAndBackgroundTasks/blob/master/app/src/main/java/dev/jeetdholakia/servicesandbackgroundtasks/foregroundservices/MyForegroundService.kt
-
-private val TAG = "com.example.ketxe.view.home.RealmDBService"
-
-fun log(msg: String) {
-    Log.w(TAG, msg)
-}
-
 class MyForegroundService: Service() {
+    companion object {
+        fun start(context: Context) {
+            val myServiceIntent = Intent(context, MyForegroundService::class.java)
+            myServiceIntent.action = "START"
+            ContextCompat.startForegroundService(context, myServiceIntent)
+        }
+
+        fun stop(context: Context) {
+            val myServiceIntent = Intent(context, MyForegroundService::class.java)
+            myServiceIntent.action = "STOP"
+            ContextCompat.startForegroundService(context, myServiceIntent)
+        }
+    }
+
     private var onJob = false
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -76,11 +82,10 @@ class MyForegroundService: Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
-        if (!onJob) {
-            Thread { job() }.start()
-            onJob = true
-            KeyValueStorage(this).setIsBackgroundServiceRunning(true)
-        }
+        if (onJob) return
+        Thread { job() }.start()
+        onJob = true
+        KeyValueStorage(this).setIsBackgroundServiceRunning(true)
     }
 
     override fun onDestroy() {
@@ -91,20 +96,6 @@ class MyForegroundService: Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-    companion object {
-        fun start(context: Context) {
-            val myServiceIntent = Intent(context, MyForegroundService::class.java)
-            myServiceIntent.action = "START"
-            ContextCompat.startForegroundService(context, myServiceIntent)
-        }
-
-        fun stop(context: Context) {
-            val myServiceIntent = Intent(context, MyForegroundService::class.java)
-            myServiceIntent.action = "STOP"
-            ContextCompat.startForegroundService(context, myServiceIntent)
-        }
-    }
 }
 
 //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
