@@ -67,7 +67,7 @@ interface HomeView {
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
 
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
-    private var myLocService: MyLocationService = MyLocationRequester()
+    private var myLocService: MyLocationService = FusedLocationService()
     private var dbService: DataService = RealmDBService()
 
     override fun onTapMyLocationButton() {

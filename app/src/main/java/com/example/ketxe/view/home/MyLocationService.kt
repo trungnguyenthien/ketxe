@@ -19,21 +19,21 @@ interface MyLocationService {
     fun stopRequest()
 }
 
-class MyLocationRequester(): MyLocationService {
+class FusedLocationService : MyLocationService {
     private var onStopHandler: (() -> Unit)? = null
     private var onSuccessHandler: ((Location) -> Unit)? = null
     private var activity: Activity? = null
     private var callback: LocationCallback? = null
 
-    val fusedLocationProviderClient: FusedLocationProviderClient by lazy { FusedLocationProviderClient(activity!!) }
+    private val fusedLocationProviderClient: FusedLocationProviderClient by lazy { FusedLocationProviderClient(activity!!) }
 
     private fun start() {
         val noPermission = dontGrant(Manifest.permission.ACCESS_FINE_LOCATION) && dontGrant(Manifest.permission.ACCESS_COARSE_LOCATION)
-        if (noPermission) requestLocationSetting()
+        if (noPermission) openLocationSettingScreen()
         else requestMyLocation()
     }
 
-    private fun requestLocationSetting() {
+    private fun openLocationSettingScreen() {
         activity?.run {
             AlertDialog.Builder(this)
                 .setMessage("Enable GPS")
