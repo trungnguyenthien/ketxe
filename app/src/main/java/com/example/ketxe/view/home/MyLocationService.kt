@@ -6,35 +6,29 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import java.util.concurrent.Future
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 
 interface MyLocationService {
     fun request(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit)
     fun stopRequest()
 }
 
-class MyLocationRequester: LocationListener, MyLocationService {
-    private var locationManager: LocationManager? = null
+class MyLocationRequester(): MyLocationService {
     private var onStopHandler: (() -> Unit)? = null
     private var onSuccessHandler: ((Location) -> Unit)? = null
     private var activity: Activity? = null
-
-    override fun onLocationChanged(location: Location) {
-        onSuccessHandler?.invoke(location)
-        locationManager?.removeUpdates(this)
-        onStopHandler?.invoke()
-    }
+    val fusedLocationProviderClient: FusedLocationProviderClient by lazy { FusedLocationProviderClient(activity!!) }
 
     private fun start() {
-        val enableProvider = locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        if (enableProvider == true) requestMyLocation()
-        else requestLocationSetting()
+        val noPermission = dontGrant(Manifest.permission.ACCESS_FINE_LOCATION) && dontGrant(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (noPermission) requestLocationSetting()
+        else requestMyLocation()
     }
 
     private fun requestLocationSetting() {
@@ -53,22 +47,36 @@ class MyLocationRequester: LocationListener, MyLocationService {
     private fun dontGrant(permission: String): Boolean =
         activity?.let { ActivityCompat.checkSelfPermission(it, permission) } != PackageManager.PERMISSION_GRANTED
 
+    private var callback: LocationCallback? = null
+
     @SuppressLint("MissingPermission")
     private fun requestMyLocation() {
         if (dontGrant(Manifest.permission.ACCESS_FINE_LOCATION) && dontGrant(Manifest.permission.ACCESS_COARSE_LOCATION)) {
             return
         }
-        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+
+        val request = LocationRequest()
+        request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        request.interval = 100
+        request.fastestInterval = 100
+        request.smallestDisplacement = 1F
+
+        callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult?) {
+                super.onLocationResult(result)
+                result?.run {
+                    onSuccessHandler?.invoke(result.locations.last())
+                    onStopHandler?.invoke()
+                    fusedLocationProviderClient.removeLocationUpdates(callback)
+                }
+            }
+        }
+
+        fusedLocationProviderClient.requestLocationUpdates(request, callback, null)
     }
 
-    override fun request(
-        activity: Activity,
-        onStart: () -> Unit,
-        onStop: () -> Unit,
-        onSuccess: (Location) -> Unit
-    ) {
+    override fun request(activity: Activity, onStart: () -> Unit, onStop: () -> Unit, onSuccess: (Location) -> Unit) {
         this.activity = activity
-        locationManager = activity.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
         onStopHandler = onStop
         onSuccessHandler = onSuccess
         onStart.invoke()
@@ -76,7 +84,9 @@ class MyLocationRequester: LocationListener, MyLocationService {
     }
 
     override fun stopRequest() {
-        locationManager?.removeUpdates(this)
-        onStopHandler?.invoke()
+        callback?.run {
+            fusedLocationProviderClient.removeLocationUpdates(callback)
+            onStopHandler?.invoke()
+        }
     }
 }
