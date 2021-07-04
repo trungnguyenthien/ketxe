@@ -42,52 +42,5 @@ fun toDate(stringDate: String): Date {
 
 fun Date.simpleDateFormat(): String {
     val sdf = SimpleDateFormat("dd/MM/yyyy")
-    return sdf.format(Date())
-}
-
-fun Date.detailDateFormat(): String {
-    val sdf = SimpleDateFormat("dd/MM HH:mm")
-    return sdf.format(Date())
-}
-
-fun Date.HOUR_OF_DAY(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.HOUR_OF_DAY)
-}
-
-fun Date.MINUTE(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.MINUTE)
-}
-
-fun Date.SECOND(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.SECOND)
-}
-
-fun Date.DAY_OF_MONTH(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.DAY_OF_MONTH)
-}
-
-fun Date.DAY_OF_WEEK(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.DAY_OF_WEEK)
-}
-
-fun Date.MONTH(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.MONTH)
-}
-
-fun Date.YEAR(): Int {
-    val cal = Calendar.getInstance()
-    cal.time = this
-    return cal.get(Calendar.YEAR)
+    return sdf.format(this)
 }
