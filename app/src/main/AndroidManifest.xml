@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MyJobService">
+        <service android:name=".MyForegroundService">
         </service>
 
     </application>

@@ -172,12 +172,12 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
 
     override fun startService() {
         if (isGranted(Manifest.permission.FOREGROUND_SERVICE)) {
-            MyJobService.startJob(this)
+            MyForegroundService.start(this)
         }
     }
 
     override fun stopService() {
-        MyJobService.stopJob(this)
+        MyForegroundService.stop(this)
     }
 
     override fun updateStartStopServiceButton(isStart: Boolean) {

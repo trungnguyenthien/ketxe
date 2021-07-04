@@ -24,7 +24,7 @@ fun log(msg: String) {
     Log.w(TAG, msg)
 }
 
-class MyJobService: Service() {
+class MyForegroundService: Service() {
     private var onJob = false
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -93,14 +93,14 @@ class MyJobService: Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-        fun startJob(context: Context) {
-            val myServiceIntent = Intent(context, MyJobService::class.java)
+        fun start(context: Context) {
+            val myServiceIntent = Intent(context, MyForegroundService::class.java)
             myServiceIntent.action = "START"
             ContextCompat.startForegroundService(context, myServiceIntent)
         }
 
-        fun stopJob(context: Context) {
-            val myServiceIntent = Intent(context, MyJobService::class.java)
+        fun stop(context: Context) {
+            val myServiceIntent = Intent(context, MyForegroundService::class.java)
             myServiceIntent.action = "STOP"
             ContextCompat.startForegroundService(context, myServiceIntent)
         }
