@@ -56,8 +56,7 @@ fun makeBoundingBox(lat: Double, lng: Double, radInKm: Double): BoundingBox {
     val longitude: Double = lng
 
     val radInMeter = radInKm * 1000
-    val longitudeD =
-        asin(radInMeter / (6378000 * cos(Math.PI * latitude / 180))) * 180 / Math.PI
+    val longitudeD = asin(radInMeter / (6378000 * cos(Math.PI * latitude / 180))) * 180 / Math.PI
     val latitudeD = asin(radInMeter / 6378000.toDouble()) * 180 / Math.PI
 
     val maxLat = latitude + latitudeD
