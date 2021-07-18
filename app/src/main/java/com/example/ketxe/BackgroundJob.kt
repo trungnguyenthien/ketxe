@@ -20,7 +20,7 @@ class BackgroundJob(val context: Context) {
     private val api: TrafficService = TrafficBingService()
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun run() {
+    fun run() { // <= Function này sẽ run mỗi lần thực hiện background job.
         dbService.getAllAddress().forEach { address ->
             process(address)
         }
