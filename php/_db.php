@@ -17,6 +17,23 @@ class KUserIncident {
     public $location;
 }
 
+function connection() {
+    $address = "localhost";
+    $username = "ketxexyz_admin";
+    $password = "123456";
+    $database = "ketxexyz_kx01";
+
+    // Create connection
+    $conn =  mysqli_connect($address, $username, $password, $database);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    } 
+
+    return $conn;
+}
+
 function currentTime() {
     return date('Y/m/d H:i');
 }
