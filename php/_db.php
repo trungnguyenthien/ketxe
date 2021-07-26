@@ -58,7 +58,7 @@ function response($code, $message) {
         "status" => $code, 
         "message" => $message
     ];
-    echo(var_dump($response));
+    echo(json_encode($response));
 }
 
 function response_success() {
