@@ -1,4 +1,5 @@
 <?php
+include '_db.php';
 
 $area = $_GET["area"];
 
@@ -11,4 +12,3 @@ $maxLng = $com[3];
 
 db_clean_old_incident();
 db_search_incident($minLat, $minLng, $maxLat, $maxLng);
-response_success();

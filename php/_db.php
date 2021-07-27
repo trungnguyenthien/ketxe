@@ -1,22 +1,5 @@
 <?php 
 
-// class KLocation {
-//     function __construct($lat, $lng) {
-//         $this->lat = $lat;
-//         $this->lng = $lng;
-//     }
-
-//     public $lat = 0;
-//     public $lng = 0;
-// }
-
-// class KUserIncident {
-//     public $title;
-//     public $uuid;
-//     public $report_time;
-//     public $location;
-// }
-
 function connection() {
     $address = "localhost";
     $username = "ketxexyz_admin";
@@ -35,7 +18,14 @@ function connection() {
 }
 
 function hasResult($result) {
-    return mysql_num_rows($result) > 0;
+    return count(resultToArrayRows($result)) > 0;
+}
+
+function resultToArrayRows($result) {
+    while($row = $result->fetch_assoc()) {
+        $jsonArray[]= $row;
+    }
+    return $jsonArray;
 }
 
 function currentTime() {
@@ -53,20 +43,21 @@ function db_clean_old_incident() {
     $conn->close();
 }
 
-function response($code, $message) {
+function response($code, $message, $data) {
     $response = [
         "status" => $code, 
-        "message" => $message
+        "message" => $message,
+        "data" => $data
     ];
     echo(json_encode($response));
 }
 
-function response_success() {
-    response(200, "Success");
+function response_update_success() {
+    response(200, "Update Success", null);
 }
 
 function response_failure($message) {
-    response(500, $message);
+    response(500, $message, null);
 }
 
 function db_save_incident($lat, $lng, $title) {
@@ -80,6 +71,12 @@ function db_save_incident($lat, $lng, $title) {
 
 function db_search_incident($minLat, $minLng, $maxLat, $maxLng) {
     $current = currentTime();
+    $conn = connection();
+    $sql = "SELECT * FROM tb_incident WHERE lat > $minLat AND lat < $maxLat AND lng > $minLng AND lng < $maxLng";
+    $result = $conn->query($sql);
+    $data = resultToArrayRows($result);
+    $conn->close();
+    response(200, "Success", $data);
 }
 
 function db_check_duplicate_incident($lat, $lng) {
@@ -91,7 +88,9 @@ function db_check_duplicate_incident($lat, $lng) {
     $maxLng = $lng + $d;
 
     $sql = "SELECT * FROM tb_incident WHERE lat > $minLat AND lat < $maxLat AND lng > $minLng AND lng < $maxLng";
+    echo $sql;
     $result = $conn->query($sql);
+    
     $hasResult = hasResult($result);
 
     $conn->close();

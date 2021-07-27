@@ -6,5 +6,9 @@ $lng = $_POST['lng'];
 $title = $_POST['title'];
 
 db_clean_old_incident();
-db_save_incident($lat, $lng, $title);
-response_success();
+if(!db_check_duplicate_incident($lat, $lng)) {
+    db_save_incident($lat, $lng, $title);
+    response_update_success();
+} else {
+    response(500, "Duplicate Incident", null);
+}

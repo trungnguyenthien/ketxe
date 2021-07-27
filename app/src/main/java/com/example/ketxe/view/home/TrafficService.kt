@@ -2,6 +2,7 @@ package com.example.ketxe.view.home
 
 import com.example.ketxe.entity.IncidentsResponse
 import com.example.ketxe.entity.Resources
+import com.example.ketxe.entity.UserReportResponse
 import com.example.ketxe.log
 import com.google.android.gms.maps.model.LatLng
 import retrofit2.Call
@@ -9,9 +10,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 import kotlin.math.asin
 import kotlin.math.cos
 
@@ -85,7 +84,7 @@ val virtualearthRetrofit: Retrofit = Retrofit.Builder()
 val bingKey = "AoAJOXY4xxhJ0CUddHOJfpx9CRnQBWo5OmfS5A2OBexlD4OuRN6QdNeAiSrUB_Jk"
 
 // http://dev.virtualearth.net/REST/v1/Traffic/Incidents/10, 106, 15, 108?severity=3,4&key=AoAJOXY4xxhJ0CUddHOJfpx9CRnQBWo5OmfS5A2OBexlD4OuRN6QdNeAiSrUB_Jk
-interface API {
+interface VirtualEarthAPI {
     @GET("REST/v1/Traffic/Incidents/{area}")
     fun incident(
         @Path("area") area: String,
@@ -94,4 +93,25 @@ interface API {
     ): Call<IncidentsResponse>
 }
 
-val virtualearthAPI: API = virtualearthRetrofit.create(API::class.java)
+val virtualearthAPI: VirtualEarthAPI = virtualearthRetrofit.create(VirtualEarthAPI::class.java)
+
+val KetXeAsiaRetrofit: Retrofit = Retrofit.Builder()
+    .baseUrl("https://ketxe.asia")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+
+interface KxAPI {
+    @GET("get.php")
+    fun get(
+        @Query("area") area: String
+    ): Call<UserReportResponse>
+
+    @POST("add.php")
+    fun add(
+        @Field("lat") lat: Double,
+        @Field("lng") lng: Double,
+        @Field("title") title: String
+    ): Call<UserReportResponse>
+}
+
+val kxAPI: KxAPI = KetXeAsiaRetrofit.create(KxAPI::class.java)
