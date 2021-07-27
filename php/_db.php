@@ -88,9 +88,8 @@ function db_check_duplicate_incident($lat, $lng) {
     $maxLng = $lng + $d;
 
     $sql = "SELECT * FROM tb_incident WHERE lat > $minLat AND lat < $maxLat AND lng > $minLng AND lng < $maxLng";
-    echo $sql;
     $result = $conn->query($sql);
-    
+
     $hasResult = hasResult($result);
 
     $conn->close();
