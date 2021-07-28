@@ -155,7 +155,7 @@ class MyMapFragment : Fragment() {
 
     private fun makeIncidentMarker(incident: UserIncident): MarkerOptions {
         val position = LatLng(incident.lat.toDouble(), incident.lng.toDouble())
-        var resource =  R.drawable.m_ico
+        var resource =  R.drawable.user_incident1
 
         val size = 65
         val bitmapdraw = resources.getDrawable(resource) as BitmapDrawable
