@@ -2,6 +2,7 @@ package com.example.ketxe.view.home
 
 import android.app.Application
 import android.content.Context
+import com.example.ketxe.entity.UserIncident
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmObject
@@ -25,10 +26,10 @@ open class RealmDBService : DataService {
         completion.invoke()
     }
 
-    override fun saveStuck(addressId: String, stucks: List<Stuck>, completion: () -> Unit) {
+    override fun save(addressId: String, stucks: List<Stuck>, uincidents: List<UserIncident>, completion: () -> Unit) {
         val realm = Realm.getDefaultInstance()
         realm.executeTransaction {
-            val list = stucks.map { entity ->
+            val newStucks = stucks.map { entity ->
                 DbStuck().apply {
                     this.id = genId()
                     this.addressId = addressId
@@ -45,8 +46,21 @@ open class RealmDBService : DataService {
                     this.title = entity.title
                 }
             }
-            it.insert(list)
+            it.insert(newStucks)
         }
+
+        realm.executeTransaction {
+            val newIncidens = uincidents.map { entity ->
+                DbIncident().apply {
+                    this.id = genId()
+                    this.addressId = addressId
+                    this.latitude = entity.lat
+                    this.longitude = entity.lng
+                }
+            }
+            it.insert(newIncidens)
+        }
+
         realm.close()
         completion.invoke()
     }
@@ -63,7 +77,7 @@ open class RealmDBService : DataService {
         completion.invoke()
     }
 
-    override fun deleteStuck(addressId: String, completion: () -> Unit) {
+    override fun delete(addressId: String, completion: () -> Unit) {
         val realm = Realm.getDefaultInstance()
         realm.executeTransaction {
             val list = it.where<DbStuck>()
@@ -71,6 +85,14 @@ open class RealmDBService : DataService {
                 .findAll()
             list.deleteAllFromRealm()
         }
+
+        realm.executeTransaction {
+            val list = it.where<DbIncident>()
+                .equalTo("addressId", addressId)
+                .findAll()
+            list.deleteAllFromRealm()
+        }
+
         realm.close()
         completion.invoke()
     }
@@ -106,6 +128,19 @@ open class RealmDBService : DataService {
         val realm = Realm.getDefaultInstance()
         realm?.run {
             val output = where<DbStuck>()
+                .equalTo("addressId", addressId)
+                .findAll().map { it.toEntity() }
+            realm?.close()
+            return output
+        }
+        realm?.close()
+        return emptyList()
+    }
+
+    override fun getLastestIncident(addressId: String): List<UserIncident> {
+        val realm = Realm.getDefaultInstance()
+        realm?.run {
+            val output = where<DbIncident>()
                 .equalTo("addressId", addressId)
                 .findAll().map { it.toEntity() }
             realm?.close()
@@ -154,6 +189,15 @@ fun DbStuck.toEntity() = Stuck(
     stuckType(type),
     title
 )
+
+open class DbIncident : RealmObject() {
+    @PrimaryKey var id: String = ""
+    var addressId: String = ""
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+}
+
+fun DbIncident.toEntity() = UserIncident(lat = latitude, lng = longitude)
 
 fun DbAddress.toEntity() = Address(id, description, latitude, longitude)
 

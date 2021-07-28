@@ -2,6 +2,7 @@ package com.example.ketxe.view.home
 
 import com.example.ketxe.entity.IncidentsResponse
 import com.example.ketxe.entity.Resources
+import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.entity.UserReportResponse
 import com.example.ketxe.log
 import com.google.android.gms.maps.model.LatLng
@@ -16,14 +17,21 @@ import kotlin.math.cos
 
 
 interface TrafficService {
-    fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit)
+    fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit)
 }
 
 class TrafficBingService: TrafficService {
-    override fun request(location: LatLng, radius: Double, completion: (List<Resources>) -> Unit) {
+    override fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit) {
         val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
-        val call = virtualearthAPI.incident(area.toString(), "3,4", bingKey)
-        call.enqueue(object: Callback<IncidentsResponse> {
+        var output1: List<Resources>? = null
+        var output2: List<UserIncident>? = null
+
+        fun complete() {
+            if(output1 != null && output2 != null) { return }
+            completion.invoke(output1!!, output2!!)
+        }
+        val veCall = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
+        veCall.enqueue(object: Callback<IncidentsResponse> {
             override fun onResponse(call: Call<IncidentsResponse>, response: Response<IncidentsResponse>) {
                 log("Response = ${response.raw()}")
                 log("So diem ket xe = ${response.body()?.resourceSets?.first()?.resources?.size}")
@@ -33,18 +41,48 @@ class TrafficBingService: TrafficService {
                 }
 
                 response.body()?.resourceSets?.first()?.let {
-                    completion(it.resources)
+                    output1 = it.resources
+                    complete()
                 }
             }
 
             fun handle(errorCode: Int) {
-                completion(emptyList())
+                output1 = emptyList()
+                complete()
             }
 
             override fun onFailure(call: Call<IncidentsResponse>, t: Throwable) {
                 log("onFailure(${t.localizedMessage})")
                 handle(errorCode = -999)
             }
+        })
+
+        var kxCall = kxAPI.get(area = area.toString().replace(" ", ","))
+        kxCall.enqueue(object: Callback<UserReportResponse> {
+            override fun onResponse(
+                call: Call<UserReportResponse>,
+                response: Response<UserReportResponse>
+            ) {
+                if(!response.isSuccessful) {
+                    handle(errorCode = response.code())
+                    return
+                }
+
+                response.body()?.data?.let {
+                    output2 = it
+                    complete()
+                }
+            }
+
+            override fun onFailure(call: Call<UserReportResponse>, t: Throwable) {
+                handle(errorCode = -999)
+            }
+
+            fun handle(errorCode: Int) {
+                output2 = emptyList()
+                complete()
+            }
+
         })
     }
 
@@ -76,7 +114,7 @@ data class BoundingBox(
     override fun toString(): String = "$minLat,$minLng,$maxLat,$maxLng"
 }
 
-val virtualearthRetrofit: Retrofit = Retrofit.Builder()
+val virtualEarthRetrofit: Retrofit = Retrofit.Builder()
     .baseUrl("https://dev.virtualearth.net")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
@@ -93,7 +131,7 @@ interface VirtualEarthAPI {
     ): Call<IncidentsResponse>
 }
 
-val virtualearthAPI: VirtualEarthAPI = virtualearthRetrofit.create(VirtualEarthAPI::class.java)
+val virtualEarthAPI: VirtualEarthAPI = virtualEarthRetrofit.create(VirtualEarthAPI::class.java)
 
 val KetXeAsiaRetrofit: Retrofit = Retrofit.Builder()
     .baseUrl("https://ketxe.asia")

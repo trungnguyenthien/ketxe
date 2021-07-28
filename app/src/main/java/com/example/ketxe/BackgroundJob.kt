@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.ketxe.entity.Resources
+import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.model.LatLng
 import java.util.*
@@ -29,8 +30,8 @@ class BackgroundJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun process(address: Address) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
-        api.request(ll, radius = 5.0, completion = { resources ->
-            updateStucksInDB(address, resources, completion = { address, newStucks ->
+        api.request(ll, radius = 5.0, completion = { resources, userIncidents ->
+            updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks ->
                 showNotification(address, newStucks)
                 if (allowPlaySound(newStucks)) playSound()
             })
@@ -54,9 +55,9 @@ class BackgroundJob(val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun updateStucksInDB(address: Address, resources: List<Resources>, completion: (Address, List<Stuck>) -> Unit) {
+    private fun updateStucksInDB(address: Address, resources: List<Resources>, uincidents: List<UserIncident>, completion: (Address, List<Stuck>) -> Unit) {
         val addressId = address.id ?: ""
-        dbService.deleteStuck(addressId = addressId, completion = {
+        dbService.delete(addressId = addressId, completion = {
             val newStucks = resources.filter {
                 val startTime = toDate(it.start)
                 val now = Date()
@@ -81,7 +82,7 @@ class BackgroundJob(val context: Context) {
                 )
             }
 
-            dbService.saveStuck(addressId = addressId, stucks = newStucks, completion = {
+            dbService.save(addressId = addressId, stucks = newStucks, uincidents = uincidents, completion = {
                 completion.invoke(address, newStucks)
             })
         })

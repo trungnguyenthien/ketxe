@@ -1,5 +1,6 @@
 package com.example.ketxe.view.home
 
+import com.example.ketxe.entity.UserIncident
 import java.util.*
 
 data class Address(
@@ -90,12 +91,12 @@ interface DataService {
     /// Save address vào database.
     fun saveAddress(address: Address, completion: () -> Unit)
     /// Save stuck (điểm kẹt xe) vào database.
-    fun saveStuck(addressId: String, stucks: List<Stuck>, completion: () -> Unit)
+    fun save(addressId: String, stucks: List<Stuck>, uincidents: List<UserIncident>, completion: () -> Unit)
 
     /// Xoá address khỏi database.
     fun deleteAddress(addressId: String, completion: () -> Unit)
     /// Xoá stuck khỏi database.
-    fun deleteStuck(addressId: String, completion: () -> Unit)
+    fun delete(addressId: String, completion: () -> Unit)
 
     /// Lấy record Address có id tương ứng.
     fun getAddress(addressId: String): Address?
@@ -103,5 +104,7 @@ interface DataService {
     fun getAllAddress(): List<Address>
     /// Lấy tất cả recode stuck liên quan đến Address.
     fun getLastestStuck(addressId: String): List<Stuck>
+
+    fun getLastestIncident(addressId: String): List<UserIncident>
 }
 
