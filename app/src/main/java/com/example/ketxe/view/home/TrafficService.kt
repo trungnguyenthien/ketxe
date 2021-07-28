@@ -44,7 +44,7 @@ class TrafficBingService: TrafficService {
         var output2: List<UserIncident>? = null
 
         fun complete() {
-            if(output1 != null && output2 != null) { return }
+            if(output1 == null || output2 == null) { return }
             completion.invoke(output1!!, output2!!)
         }
         val veCall = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
@@ -159,7 +159,7 @@ interface KxAPI {
         @Query("area") area: String
     ): Call<UserReportResponse>
 
-    @POST("add.php")
+    @FormUrlEncoded @POST("add.php")
     fun add(
         @Field("lat") lat: Double,
         @Field("lng") lng: Double,

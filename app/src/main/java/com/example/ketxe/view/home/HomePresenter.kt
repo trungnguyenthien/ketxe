@@ -2,6 +2,7 @@ package com.example.ketxe.view.home
 
 import android.app.Activity
 import com.example.ketxe.KeyValueStorage
+import com.example.ketxe.entity.UserIncident
 import com.google.android.gms.maps.model.LatLng
 
 interface ActivityPresenter {
@@ -64,6 +65,8 @@ interface HomeView {
     fun stopService()
     /// Cập nhật trạng thái hiển thị Start/Stop button
     fun updateStartStopServiceButton(isStart: Boolean)
+    fun clearAllUIncidents()
+    fun renderUIncidents(list: List<UserIncident>)
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -115,8 +118,11 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
     override fun onOpenFromNotification(addressId: String) {
         val stucks = dbService.getLastestStuck(addressId)
+        val uincidents = dbService.getLastestIncident(addressId)
         val analyseResult = analyse(stucks)
         view.clearAllStuckLines()
+        view.clearAllUIncidents()
+        view.renderUIncidents(list = uincidents)
         view.renderClosedRoadLines(analyseResult.closesRoads)
         view.renderSeriousStuckLines(analyseResult.serious)
         view.renderNoSeriousStuckLines(analyseResult.noSerious)
@@ -125,11 +131,14 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onTapItemOnAddressList(addressId: String) {
         dbService.getAddress(addressId)?.let { address ->
             val stucks = dbService.getLastestStuck(addressId)
+            val uincidents = dbService.getLastestIncident(addressId)
             val analyseResult = analyse(stucks)
 
             val location = LatLng(address.lat.toDouble(), address.lng.toDouble())
 
             view.clearAllStuckLines()
+            view.clearAllUIncidents()
+            view.renderUIncidents(list = uincidents)
             view.addMarkerOnMap(location)
             view.moveMapCamera(location)
             view.renderClosedRoadLines(analyseResult.closesRoads)

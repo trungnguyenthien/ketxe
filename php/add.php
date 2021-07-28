@@ -4,7 +4,8 @@ include '_db.php';
 $lat = $_POST['lat'];
 $lng = $_POST['lng'];
 $title = $_POST['title'];
-
+// echo ;
+// response(500, "Recieve $lat , $lng", null);
 db_clean_old_incident();
 if(!db_check_duplicate_incident($lat, $lng)) {
     db_save_incident($lat, $lng, $title);

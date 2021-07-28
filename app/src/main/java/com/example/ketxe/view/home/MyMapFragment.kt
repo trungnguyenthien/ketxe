@@ -1,11 +1,14 @@
 package com.example.ketxe.view.home
 
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.ketxe.R
+import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.moveCamera
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -131,6 +134,37 @@ class MyMapFragment : Fragment() {
 
     fun addClosedRoadLines(stucks: List<Stuck>) {
         addLine(stucks, LineType.CLOSED_ROAD)
+    }
+
+    fun clearUIncidents() {
+        listStuckMarker.forEach { it.remove() }
+        listStuckMarker.clear()
+    }
+
+    private var listStuckMarker = ArrayList<Marker>()
+    fun renderUIncidents(list: List<UserIncident>) {
+        activity?.runOnUiThread {
+            ggMap?.let { ggMap ->
+                val options = list.map { makeIncidentMarker(it) }
+                val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
+                listStuckMarker.addAll(markers)
+            }
+        }
+
+    }
+
+    private fun makeIncidentMarker(incident: UserIncident): MarkerOptions {
+        val position = LatLng(incident.lat.toDouble(), incident.lng.toDouble())
+        var resource =  R.drawable.m_ico
+
+        val size = 65
+        val bitmapdraw = resources.getDrawable(resource) as BitmapDrawable
+        val b = bitmapdraw.bitmap
+        val smallMarker = Bitmap.createScaledBitmap(b, size, size, false)
+
+        return MarkerOptions()
+            .position(position)
+            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
     }
 }
 

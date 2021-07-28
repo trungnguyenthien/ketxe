@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.ketxe.databinding.ActivityMapsBinding
+import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -192,6 +193,14 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
             startServiceButton.visibility = View.GONE
             stopServiceButton.visibility = View.VISIBLE
         }
+    }
+
+    override fun clearAllUIncidents() {
+        ggMyMapFragment.clearUIncidents()
+    }
+
+    override fun renderUIncidents(list: List<UserIncident>) {
+        ggMyMapFragment.renderUIncidents(list = list)
     }
 
     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {

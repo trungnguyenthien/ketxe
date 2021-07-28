@@ -64,7 +64,7 @@ function db_save_incident($lat, $lng, $title) {
     $newUUID = genUUID();
     $conn = connection();
 
-    $sql = "INSERT INTO tb_incident (id, title, lat, lng, reportTime) VALUES ('$newUUID', '$title', '$lat', '$lng', now())";
+    $sql = "INSERT INTO tb_incident (id, title, lat, lng, reportTime) VALUES ('$newUUID', '$title', $lat, $lng, now())";
     mysqli_query($conn, $sql);
     $conn->close();
 }
