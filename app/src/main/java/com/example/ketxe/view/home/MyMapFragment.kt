@@ -19,6 +19,7 @@ class MyMapFragment : Fragment() {
     var onClickAddMarkerButton: (() -> Unit)? = null
     var onClickMyLocationButton: (() -> Unit)? = null
     var onClickAddAddressButton: (() -> Unit)? = null
+    var onClickReportIncidentButton: (() -> Unit)? = null
     private val addMarkerButton: FloatingActionButton by lazy {
         view!!.findViewById<FloatingActionButton>(R.id.add_marker)
     }
@@ -29,6 +30,10 @@ class MyMapFragment : Fragment() {
 
     private val addAddressButton: FloatingActionButton by lazy {
         view!!.findViewById<FloatingActionButton>(R.id.add_address_button)
+    }
+
+    private val reportIncidentButton: FloatingActionButton by lazy {
+        view!!.findViewById<FloatingActionButton>(R.id.report_incident_button)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -53,6 +58,7 @@ class MyMapFragment : Fragment() {
             addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
             myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
             addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
+            reportIncidentButton.setOnClickListener { onClickReportIncidentButton?.invoke() }
         }
         return view
     }

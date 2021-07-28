@@ -52,5 +52,14 @@
             android:src="@drawable/add_address"
             android:layout_marginBottom="16dp"
             android:layout_marginRight="156dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/report_incident_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:src="@drawable/report_incident"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="226dp" />
     </fragment>
 </LinearLayout>

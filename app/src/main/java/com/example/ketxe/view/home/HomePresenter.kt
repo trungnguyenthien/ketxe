@@ -29,6 +29,8 @@ interface HomePresenter: ActivityPresenter {
     fun onTapStartServiceButton()
     /// Sự kiện khi user tap vào button "Tắt service"
     fun onTapStopServiceButton()
+
+    fun onTapIncidentReportAtMyLocation()
 }
 
 interface HomeView {
@@ -69,7 +71,7 @@ data class HomeAddressRow(val address: Address, val result: AnalyseResult)
 class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     private var myLocService: MyLocationService = FusedLocationService()
     private var dbService: DataService = RealmDBService()
-
+    private var trafficService: TrafficService = TrafficBingService()
     override fun onTapMyLocationButton() {
         myLocService.startRequest(view.activity(),
             onStart = {
@@ -150,6 +152,21 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onTapStopServiceButton() {
         view.stopService()
         view.closeAddressList()
+    }
+
+    override fun onTapIncidentReportAtMyLocation() {
+        myLocService.startRequest(view.activity(),
+            onStart = {
+                view.showLoadingIndicator(message = "Cảnh báo của bạn đang được gửi đi...")
+            }, onStop = {
+                view.hideLoadingIndicator()
+            }, onSuccess = {
+                val latLng = LatLng(it.latitude, it.longitude)
+                trafficService.report(location = latLng, completion = {
+
+                })
+            }
+        )
     }
 
     override fun onResume(time: Int) = reloadAddressList()

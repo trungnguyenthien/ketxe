@@ -17,10 +17,27 @@ import kotlin.math.cos
 
 
 interface TrafficService {
+    fun report(location: LatLng, completion: () -> Unit)
     fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit)
 }
 
 class TrafficBingService: TrafficService {
+    override fun report(location: LatLng, completion: () -> Unit) {
+        val call = kxAPI.add(lat = location.latitude, lng = location.longitude, title = "")
+        call.enqueue(object: Callback<UserReportResponse> {
+            override fun onResponse(
+                call: Call<UserReportResponse>,
+                response: Response<UserReportResponse>
+            ) {
+                completion.invoke()
+            }
+
+            override fun onFailure(call: Call<UserReportResponse>, t: Throwable) {
+                completion.invoke()
+            }
+        })
+    }
+
     override fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit) {
         val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
         var output1: List<Resources>? = null
@@ -33,8 +50,6 @@ class TrafficBingService: TrafficService {
         val veCall = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
         veCall.enqueue(object: Callback<IncidentsResponse> {
             override fun onResponse(call: Call<IncidentsResponse>, response: Response<IncidentsResponse>) {
-                log("Response = ${response.raw()}")
-                log("So diem ket xe = ${response.body()?.resourceSets?.first()?.resources?.size}")
                 if(!response.isSuccessful) {
                     handle(errorCode = response.code())
                     return

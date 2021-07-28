@@ -112,6 +112,10 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
             presenter.onTapAddAddressButton()
         }
 
+        ggMyMapFragment.onClickReportIncidentButton = {
+            presenter.onTapIncidentReportAtMyLocation()
+        }
+
         startServiceButton.setOnClickListener {
             presenter.onTapStartServiceButton()
         }
