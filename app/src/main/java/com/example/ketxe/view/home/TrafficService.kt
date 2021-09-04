@@ -104,19 +104,24 @@ class TrafficBingService: TrafficService {
 }
 
 fun makeBoundingBox(lat: Double, lng: Double, radInKm: Double): BoundingBox {
-    val latitude: Double = lat
-    val longitude: Double = lng
+    val radiusEarth = 6371.0
 
-    val radInMeter = radInKm * 1000
-    val longitudeD = asin(radInMeter / (6378000 * cos(Math.PI * latitude / 180))) * 180 / Math.PI
-    val latitudeD = asin(radInMeter / 6378000.toDouble()) * 180 / Math.PI
+    val latByRad = Math.toRadians(lat);
+    val e = radInKm * cos(latByRad)
 
-    val maxLat = latitude + latitudeD
-    val minLat = latitude - latitudeD
-    val maxLng = longitude + longitudeD
-    val minLng = longitude - longitudeD
+    val lngDeg = Math.toDegrees(e / radiusEarth)
+    val latDeg = Math.toDegrees(radInKm / radiusEarth)
 
-    return BoundingBox(minLat, minLng, maxLat, maxLng)
+    val minLat = lat - latDeg
+    val minLng = lng - lngDeg
+
+    val maxLat = lat + latDeg
+    val maxLng = lng + lngDeg
+
+    return BoundingBox(
+        minLat, minLng, /** Top-Left Point **/
+        maxLat, maxLng  /** Bottom-Right Point **/
+    )
 }
 
 
