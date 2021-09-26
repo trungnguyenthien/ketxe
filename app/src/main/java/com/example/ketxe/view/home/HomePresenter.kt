@@ -1,9 +1,21 @@
 package com.example.ketxe.view.home
 
+import android.R.attr
 import android.app.Activity
 import com.example.ketxe.KeyValueStorage
 import com.example.ketxe.entity.UserIncident
 import com.google.android.gms.maps.model.LatLng
+import android.R.attr.label
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import androidx.core.content.ContextCompat
+
+import androidx.core.content.ContextCompat.getSystemService
+
+
+
 
 interface ActivityPresenter {
     fun onResume(time: Int)
@@ -32,6 +44,7 @@ interface HomePresenter: ActivityPresenter {
     fun onTapStopServiceButton()
 
     fun onTapIncidentReportAtMyLocation()
+    fun onTapDebugOnAddressList(address: Address)
 }
 
 interface HomeView {
@@ -67,6 +80,7 @@ interface HomeView {
     fun updateStartStopServiceButton(isStart: Boolean)
     fun clearAllUIncidents()
     fun renderUIncidents(list: List<UserIncident>)
+    fun clipboard(text: String)
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -177,6 +191,26 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
             }
         )
     }
+
+    override fun onTapDebugOnAddressList(address: Address) {
+        val location = LatLng(address.lat.toDouble(), address.lng.toDouble())
+        val fullUrl = trafficService.urlRequest(location)
+        val area = trafficService.region(location)
+        val log = "$fullUrl " +
+                "\n" +
+                "\n" +
+                "\n location=$location " +
+                "\n" +
+                "\n" +
+                "\n areaTopLeft=${area.topLeft} " +
+                "\n" +
+                "\n" +
+                "\n BottomRight=${area.bottomRight}"
+
+        view.clipboard(log)
+    }
+
+
 
     override fun onResume(time: Int) = reloadAddressList()
 

@@ -2,6 +2,8 @@ package com.example.ketxe
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -62,6 +64,7 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
         addressList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
         adapter.onDeleteItem = { onDelete(it) }
         adapter.onClickAddress = { onClickAddressOnList(it) }
+        adapter.onClickDebug = { onClickDebugOnList(it) }
         return@lazy adapter
     }
 
@@ -72,6 +75,12 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
     private fun onClickAddressOnList(address: Address) {
         address.id?.let { addressId ->
             presenter.onTapItemOnAddressList(addressId = addressId)
+        }
+    }
+
+    private fun onClickDebugOnList(address: Address) {
+        address?.let {
+            presenter.onTapDebugOnAddressList(address = it)
         }
     }
 
@@ -201,6 +210,12 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
 
     override fun renderUIncidents(list: List<UserIncident>) {
         ggMyMapFragment.renderUIncidents(list = list)
+    }
+
+    override fun clipboard(text: String) {
+        val clipboard = /* context. */ getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("log", text)
+        clipboard.setPrimaryClip(clip)
     }
 
     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {

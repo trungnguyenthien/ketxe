@@ -61,9 +61,8 @@ class BackgroundJob(val context: Context) {
             val newStucks = resources.filter {
                 val startTime = toDate(it.start)
                 val now = Date()
-                val isToday = startTime.simpleDateFormat() == now.simpleDateFormat()
-                val verified = it.verified
-                return@filter verified && isToday
+//                val isToday = startTime.simpleDateFormat() == now.simpleDateFormat()
+                return@filter it.verified // && isToday
             }.map {
                 Stuck(
                     id = null,

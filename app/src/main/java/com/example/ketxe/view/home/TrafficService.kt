@@ -17,11 +17,28 @@ import kotlin.math.cos
 
 
 interface TrafficService {
+    data class RegionInfo(val topLeft: LatLng, val bottomRight: LatLng)
+    fun urlRequest(location: LatLng): String
+    fun region(location: LatLng) : RegionInfo
     fun report(location: LatLng, completion: () -> Unit)
     fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit)
 }
 
 class TrafficBingService: TrafficService {
+    override fun urlRequest(location: LatLng): String {
+        val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
+        val call = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
+        return call.request().url().url().toString()
+    }
+
+    override fun region(location: LatLng): TrafficService.RegionInfo {
+        val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
+        return TrafficService.RegionInfo(
+            topLeft = LatLng(area.minLat, area.minLng),
+            bottomRight = LatLng(area.maxLat, area.maxLng)
+        );
+    }
+
     override fun report(location: LatLng, completion: () -> Unit) {
         val call = kxAPI.add(lat = location.latitude, lng = location.longitude, title = "")
         call.enqueue(object: Callback<UserReportResponse> {
@@ -78,12 +95,12 @@ class TrafficBingService: TrafficService {
                 call: Call<UserReportResponse>,
                 response: Response<UserReportResponse>
             ) {
-                if(!response.isSuccessful) {
-                    handle(errorCode = response.code())
-                    return
-                }
+//                if(!response.isSuccessful) {
+//                    handle(errorCode = response.code())
+//                    return
+//                }
 
-                response.body()?.data?.let {
+                (response.body()?.data ?: emptyList()).let {
                     output2 = it
                     complete()
                 }
