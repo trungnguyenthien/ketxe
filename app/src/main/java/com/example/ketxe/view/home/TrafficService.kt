@@ -26,13 +26,13 @@ interface TrafficService {
 
 class TrafficBingService: TrafficService {
     override fun urlRequest(location: LatLng): String {
-        val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
+        val area = makeBoundingBox(location.latitude, location.longitude, 2.0)
         val call = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
         return call.request().url().url().toString()
     }
 
     override fun region(location: LatLng): TrafficService.RegionInfo {
-        val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
+        val area = makeBoundingBox(location.latitude, location.longitude, 2.0)
         return TrafficService.RegionInfo(
             topLeft = LatLng(area.minLat, area.minLng),
             bottomRight = LatLng(area.maxLat, area.maxLng)
@@ -56,7 +56,7 @@ class TrafficBingService: TrafficService {
     }
 
     override fun request(location: LatLng, radius: Double, completion: (List<Resources>, List<UserIncident>) -> Unit) {
-        val area = makeBoundingBox(location.latitude, location.longitude, 5.0)
+        val area = makeBoundingBox(location.latitude, location.longitude, 2.0)
         var output1: List<Resources>? = null
         var output2: List<UserIncident>? = null
 
