@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.ketxe.entity.Resources
@@ -20,27 +22,37 @@ class BackgroundJob(val context: Context) {
     private val dbService: DataService = RealmDBService()
     private val api: TrafficService = TrafficBingService()
 
+
+    private var willSound = false
     @RequiresApi(Build.VERSION_CODES.O)
     fun run() { // <= Function này sẽ run mỗi lần thực hiện background job.
+        willSound = false
         dbService.getAllAddress().forEach { address ->
-            process(address)
+            process(address) { sound ->
+                willSound = willSound || sound
+            }
         }
+
+        Handler(Looper.getMainLooper()).postDelayed( {
+            if (willSound) playSound()
+            willSound = false
+        }, 2000)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun process(address: Address) {
+    private fun process(address: Address, callback: (Boolean) -> Unit) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
         api.request(ll, radius = 2.0, completion = { resources, userIncidents ->
             updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks ->
                 showNotification(address, newStucks)
-                if (allowPlaySound(newStucks)) playSound()
+                callback.invoke(allowPlaySound(newStucks))
             })
         })
     }
 
     private fun allowPlaySound(stucks: List<Stuck>): Boolean {
         val result = analyse(stucks)
-        return (result.seriousCount + result.noSeriousCount) > 0
+        return (result.closesRoadsCount + result.seriousCount + result.noSeriousCount) > 0
     }
 
     private fun playSound() {
