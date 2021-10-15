@@ -13,7 +13,6 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -22,6 +21,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.entity.UserIncident
+import com.example.ketxe.view.AddAddressFragment
 import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -56,6 +56,8 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
     }
+
+    private val ggMyMapFragment = MyMapFragment()
 
     private val customAdapter: AddressList.Adapter by lazy {
         var adapter = AddressList.Adapter(this)
@@ -109,9 +111,8 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
         replaceFragment(ggMyMapFragment)
 
         ggMyMapFragment.onClickAddMarkerButton = {
-            ggMyMapFragment.centerLocation()?.let {
-                presenter.onTapAddMarkerButton(it)
-            }
+            val center = ggMyMapFragment.centerLocation() ?: LatLng(0.0,0.0)
+            presenter.onTapAddMarkerButton(center)
         }
 
         ggMyMapFragment.onClickMyLocationButton = {
@@ -222,18 +223,14 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
         ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
     }
 
-    private val ggMyMapFragment: MyMapFragment by lazy {
-        MyMapFragment()
-    }
-
     private fun replaceFragment(fragment: Fragment) {
         val fragmentManger = supportFragmentManager
         val transaction = fragmentManger.beginTransaction()
         transaction.setCustomAnimations(
-            android.R.anim.slide_in_left,
-            android.R.anim.slide_out_right
+            android.R.anim.fade_in, android.R.anim.fade_out
         )
         transaction.replace(R.id.main_fragment_container, fragment)
+        transaction.addToBackStack(null)
         transaction.commit()
     }
 
@@ -256,20 +253,22 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
     }
 
     override fun showInputDialogAddressName() {
-        val taskEditText = EditText(this)
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Giải pháp tránh Kẹt xe")
-            .setMessage("Nhập tên địa điểm này:")
-            .setView(taskEditText)
-            .setPositiveButton("Hoàn tất") { _, _ ->
-                ggMyMapFragment.currentMarkerLocation()?.let {
-                    val addressName = taskEditText.text.toString()
-                    presenter.onSubmitAddress(addressName = addressName, location = it)
-                }
-            }
-            .setNegativeButton("Từ chối", null)
-            .create()
-        dialog.show()
+
+        replaceFragment(AddAddressFragment.newInstance())
+//        val taskEditText = EditText(this)
+//        val dialog = AlertDialog.Builder(this)
+//            .setTitle("Giải pháp tránh Kẹt xe")
+//            .setMessage("Nhập tên địa điểm này:")
+//            .setView(taskEditText)
+//            .setPositiveButton("Hoàn tất") { _, _ ->
+//                ggMyMapFragment.currentMarkerLocation()?.let {
+//                    val addressName = taskEditText.text.toString()
+//                    presenter.onSubmitAddress(addressName = addressName, location = it)
+//                }
+//            }
+//            .setNegativeButton("Từ chối", null)
+//            .create()
+//        dialog.show()
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}

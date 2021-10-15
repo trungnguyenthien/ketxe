@@ -23,27 +23,17 @@ class MyMapFragment : Fragment() {
     var onClickMyLocationButton: (() -> Unit)? = null
     var onClickAddAddressButton: (() -> Unit)? = null
     var onClickReportIncidentButton: (() -> Unit)? = null
-    private val addMarkerButton: FloatingActionButton by lazy {
-        view!!.findViewById<FloatingActionButton>(R.id.add_marker)
-    }
 
-    private val myLocationButton: FloatingActionButton by lazy {
-        view!!.findViewById<FloatingActionButton>(R.id.my_location_button)
-    }
-
-    private val addAddressButton: FloatingActionButton by lazy {
-        view!!.findViewById<FloatingActionButton>(R.id.add_address_button)
-    }
-
-    private val reportIncidentButton: FloatingActionButton by lazy {
-        view!!.findViewById<FloatingActionButton>(R.id.report_incident_button)
-    }
+    private val addMarkerButton: FloatingActionButton get() = view!!.findViewById(R.id.add_marker)
+    private val myLocationButton: FloatingActionButton get() = view!!.findViewById(R.id.my_location_button)
+    private val addAddressButton: FloatingActionButton get() = view!!.findViewById(R.id.add_address_button)
+    private val reportIncidentButton: FloatingActionButton get() = view!!.findViewById(R.id.report_incident_button)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view =  inflater.inflate(R.layout.home_fragment_map, container, false)
         
         val supportMapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        supportMapFragment.getMapAsync {
+        if(ggMap == null) supportMapFragment.getMapAsync {
             ggMap = it
 
             val sydney = LatLng(initLat, initLng)
@@ -58,12 +48,18 @@ class MyMapFragment : Fragment() {
                     "    ]\n" +
                     "  }\n" +
                     "]"))
-            addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
-            myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
-            addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
-            reportIncidentButton.setOnClickListener { onClickReportIncidentButton?.invoke() }
+
         }
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        addMarkerButton.setOnClickListener { onClickAddMarkerButton?.invoke() }
+        myLocationButton.setOnClickListener { onClickMyLocationButton?.invoke() }
+        addAddressButton.setOnClickListener { onClickAddAddressButton?.invoke() }
+        reportIncidentButton.setOnClickListener { onClickReportIncidentButton?.invoke() }
     }
 
     fun centerLocation(): LatLng? = ggMap?.cameraPosition?.target
