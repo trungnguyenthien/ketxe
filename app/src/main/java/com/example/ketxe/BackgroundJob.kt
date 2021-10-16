@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.ketxe.entity.Resources
 import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.view.home.*
@@ -23,29 +24,29 @@ class BackgroundJob(val context: Context) {
     private val api: TrafficService = TrafficBingService()
     private val channelID = "channelID"
 
-    private var willSound = false
     @RequiresApi(Build.VERSION_CODES.O)
     fun run() { // <= Function này sẽ run mỗi lần thực hiện background job.
 //        clearAllNotification()
-        willSound = false
+        NotificationManagerCompat.from(context).cancelAll()
+        var willSound = false
 
         dbService.getAllAddress().filter { it.inTime() }.forEach { address ->
-            process(address) { willSound = willSound || it }
+            process(address) { willSound = true }
         }
 
         Handler(Looper.getMainLooper()).postDelayed( {
             if (willSound) playSound()
-            willSound = false
         }, 2000)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun process(address: Address, callback: (Boolean) -> Unit) {
+    private fun process(address: Address, callback: () -> Unit) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
         api.request(ll, radius = 2.0, completion = { resources, userIncidents ->
             updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks ->
+                if(!allowPlaySound(newStucks)) return@updateStucksInDB
                 showNotification(address, newStucks)
-                callback.invoke(allowPlaySound(newStucks))
+                callback.invoke()
             })
         })
     }
