@@ -26,8 +26,10 @@ import com.example.ketxe.view.home.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import java.time.LocalDateTime
 
-class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener {
+class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
+    AddAddressFragment.Listener {
 
     private lateinit var binding: ActivityMapsBinding
 
@@ -108,7 +110,7 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
         // Show menu button at left navigationBar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        replaceFragment(ggMyMapFragment)
+        present(ggMyMapFragment)
 
         ggMyMapFragment.onClickAddMarkerButton = {
             val center = ggMyMapFragment.centerLocation() ?: LatLng(0.0,0.0)
@@ -223,12 +225,10 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
         ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
     }
 
-    private fun replaceFragment(fragment: Fragment) {
+    private fun present(fragment: Fragment) {
         val fragmentManger = supportFragmentManager
         val transaction = fragmentManger.beginTransaction()
-        transaction.setCustomAnimations(
-            android.R.anim.fade_in, android.R.anim.fade_out
-        )
+        transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
         transaction.replace(R.id.main_fragment_container, fragment)
         transaction.addToBackStack(null)
         transaction.commit()
@@ -253,22 +253,7 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
     }
 
     override fun showInputDialogAddressName() {
-
-        replaceFragment(AddAddressFragment.newInstance())
-//        val taskEditText = EditText(this)
-//        val dialog = AlertDialog.Builder(this)
-//            .setTitle("Giải pháp tránh Kẹt xe")
-//            .setMessage("Nhập tên địa điểm này:")
-//            .setView(taskEditText)
-//            .setPositiveButton("Hoàn tất") { _, _ ->
-//                ggMyMapFragment.currentMarkerLocation()?.let {
-//                    val addressName = taskEditText.text.toString()
-//                    presenter.onSubmitAddress(addressName = addressName, location = it)
-//                }
-//            }
-//            .setNegativeButton("Từ chối", null)
-//            .create()
-//        dialog.show()
+        present(AddAddressFragment.newInstance(this))
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
@@ -280,6 +265,16 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener 
     override fun onDrawerClosed(drawerView: View) {}
 
     override fun onDrawerStateChanged(newState: Int) {}
+
+    override fun onSaveClick(address: String, startTime: LocalDateTime?, endTime: LocalDateTime?) {
+        val currentMarkerLocation = ggMyMapFragment.currentMarkerLocation() ?: return
+        presenter.onSubmitAddress(
+            addressName = address,
+            location = currentMarkerLocation,
+            startTime = startTime,
+            endTime = endTime
+        )
+    }
 }
 
 fun requestTrafficPermission(activity: Activity, code: Int) {

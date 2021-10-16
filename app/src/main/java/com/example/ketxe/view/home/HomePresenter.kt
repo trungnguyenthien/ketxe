@@ -13,8 +13,7 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 
 import androidx.core.content.ContextCompat.getSystemService
-
-
+import java.time.LocalDateTime
 
 
 interface ActivityPresenter {
@@ -29,7 +28,7 @@ interface HomePresenter: ActivityPresenter {
     /// Sự kiện khi user tap vào button Add Address (thêm toạ độ của marker vào danh sách)
     fun onTapAddAddressButton()
     /// Sự kiện khi user chọn "Đồng Ý", sau khi nhập tên
-    fun onSubmitAddress(addressName: String, location: LatLng)
+    fun onSubmitAddress(addressName: String, location: LatLng, startTime: LocalDateTime?, endTime: LocalDateTime?)
     /// Sự kiện khi user tap button Delete trong AddressList
     fun onTapDeleteButtonOnAddressList(address: Address)
     /// Sự kiện khi ứng dụng được open khi user chọn notification
@@ -109,7 +108,12 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         view.showInputDialogAddressName()
     }
 
-    override fun onSubmitAddress(addressName: String, location: LatLng) {
+    override fun onSubmitAddress(
+        addressName: String,
+        location: LatLng,
+        startTime: LocalDateTime?,
+        endTime: LocalDateTime?
+    ) {
         val newAddress = Address(
             id = null,
             description = addressName,

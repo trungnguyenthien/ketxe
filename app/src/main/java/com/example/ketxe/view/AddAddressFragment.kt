@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import com.example.ketxe.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.time.LocalDateTime
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -19,7 +20,11 @@ private const val ARG_PARAM2 = "param2"
  * Use the [AddAddressFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class AddAddressFragment : Fragment() {
+class AddAddressFragment(val listener: Listener): Fragment() {
+
+    interface Listener {
+        fun onSaveClick(address: String, startTime: LocalDateTime?, endTime: LocalDateTime?)
+    }
 
     private val backButton: Button get() = view!!.findViewById(R.id.btn_back)
 
@@ -50,6 +55,6 @@ class AddAddressFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance() = AddAddressFragment()
+        fun newInstance(listener: Listener) = AddAddressFragment(listener)
     }
 }
