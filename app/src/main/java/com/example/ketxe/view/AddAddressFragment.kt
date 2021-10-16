@@ -84,7 +84,12 @@ class AddAddressFragment(private val listener: Listener): Fragment() {
     }
 
     private fun updateTime(button: Button, hourOfDay: Int, minute: Int) {
-        button.text = "$hourOfDay:$minute"
+        button.text = "${hourOfDay.to00}:${minute.to00}"
+    }
+
+    private val Int.to00 get() = when(this < 10) {
+        true -> "0$this"
+        false -> "$this"
     }
 
     companion object {
