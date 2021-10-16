@@ -36,25 +36,15 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
 
     private val presenter: HomePresenter = HomePresenterImpl(this)
 
-    private val startServiceButton: Button by lazy {
-        findViewById<Button>(R.id.btn_start)
-    }
+    private val startServiceButton: Button by lazy { findViewById(R.id.btn_start) }
 
-    private val stopServiceButton: Button by lazy {
-        findViewById<Button>(R.id.btn_stop)
-    }
+    private val stopServiceButton: Button by lazy { findViewById(R.id.btn_stop) }
 
-    private val drawerLayout: DrawerLayout by lazy {
-        findViewById<DrawerLayout>(R.id.my_drawer_layout)
-    }
+    private val drawerLayout: DrawerLayout by lazy { findViewById(R.id.my_drawer_layout) }
 
-    private val loadingLayout: RelativeLayout by lazy {
-        findViewById<RelativeLayout>(R.id.loading_layout)
-    }
+    private val loadingLayout: RelativeLayout by lazy { findViewById(R.id.loading_layout) }
 
-    private val loadingText: TextView by lazy {
-        findViewById<TextView>(R.id.loading_text)
-    }
+    private val loadingText: TextView by lazy { findViewById(R.id.loading_text) }
 
     private val actionBarDrawerToggle: ActionBarDrawerToggle by lazy {
         ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close)
@@ -94,7 +84,7 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
     }
 
     private val addressList: AddressList by lazy {
-        findViewById<AddressList>(R.id.listview)
+        findViewById(R.id.listview)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -224,6 +214,10 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
 
     override fun showToast(message: String) {
         Toast.makeText(this, message , Toast.LENGTH_SHORT).show();
+    }
+
+    override fun popTop() {
+        supportFragmentManager.popBackStack()
     }
 
     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {

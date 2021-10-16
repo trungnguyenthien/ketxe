@@ -82,6 +82,8 @@ interface HomeView {
     fun clipboard(text: String)
 
     fun showToast(message: String)
+
+    fun popTop()
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -132,6 +134,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
 
         dbService.saveAddress(newAddress, completion = {
             reloadAddressList()
+            view.popTop()
         })
     }
 

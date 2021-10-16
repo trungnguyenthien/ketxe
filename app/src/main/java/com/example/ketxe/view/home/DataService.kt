@@ -10,7 +10,15 @@ data class Address(
     val lng: Float,
     val startTime: Int,
     val endTime: Int,
-)
+) {
+    fun inTime(): Boolean {
+        val rightNow = Calendar.getInstance()
+        val hourOfDay = rightNow[Calendar.HOUR_OF_DAY]
+        val minute = rightNow[Calendar.MINUTE]
+        val minuteOfDay = hourOfDay * 60 + minute
+        return minuteOfDay in startTime until endTime
+    }
+}
 
 data class Stuck(
     val id: String?,

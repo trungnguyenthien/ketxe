@@ -19,6 +19,8 @@ open class RealmDBService : DataService {
                 this.description = address.description
                 this.latitude = address.lat
                 this.longitude = address.lng
+                this.startTime = address.startTime
+                this.endTime = address.endTime
             }
             it.insert(dto)
         }

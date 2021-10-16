@@ -21,16 +21,16 @@ import java.util.*
 class BackgroundJob(val context: Context) {
     private val dbService: DataService = RealmDBService()
     private val api: TrafficService = TrafficBingService()
-
+    private val channelID = "channelID"
 
     private var willSound = false
     @RequiresApi(Build.VERSION_CODES.O)
     fun run() { // <= Function này sẽ run mỗi lần thực hiện background job.
+//        clearAllNotification()
         willSound = false
-        dbService.getAllAddress().forEach { address ->
-            process(address) { sound ->
-                willSound = willSound || sound
-            }
+
+        dbService.getAllAddress().filter { it.inTime() }.forEach { address ->
+            process(address) { willSound = willSound || it }
         }
 
         Handler(Looper.getMainLooper()).postDelayed( {
@@ -104,7 +104,7 @@ class BackgroundJob(val context: Context) {
         val result = analyse(stucks)
         val vibratePattern = longArrayOf(0, 250, 100, 250)
 
-        val mBuilder = NotificationCompat.Builder(context, "channelID")
+        val mBuilder = NotificationCompat.Builder(context, channelID)
             .setDefaults(Notification.DEFAULT_SOUND)
             .setSmallIcon(R.drawable.image_address_map_icon) // notification icon
             .setContentTitle("🔴 Khu vực [${address.description}]") // title for notification
@@ -117,9 +117,15 @@ class BackgroundJob(val context: Context) {
             .setContentIntent(makeIntent(address))
             .setStyle(NotificationCompat.BigTextStyle().bigText(makeMessage(result)))
 
-        val mNotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
-        mNotificationManager?.notify(address.description.length, mBuilder.build())
+        notificationManager?.notify(address.description.length, mBuilder.build())
     }
+
+//    private fun clearAllNotification() {
+//        notificationManager?.deleteNotificationChannel(channelID)
+//    }
+
+    private val notificationManager get() =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
 
     private fun makeMessage(result: AnalyseResult): String {
         return "${result.closesRoadsCount} đường bị chặn, " +
