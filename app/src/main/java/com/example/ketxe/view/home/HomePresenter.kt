@@ -28,7 +28,7 @@ interface HomePresenter: ActivityPresenter {
     /// Sự kiện khi user tap vào button Add Address (thêm toạ độ của marker vào danh sách)
     fun onTapAddAddressButton()
     /// Sự kiện khi user chọn "Đồng Ý", sau khi nhập tên
-    fun onSubmitAddress(addressName: String, location: LatLng, startTime: LocalDateTime?, endTime: LocalDateTime?)
+    fun onSubmitAddress(addressName: String, location: LatLng, startTime: Int?, endTime: Int?)
     /// Sự kiện khi user tap button Delete trong AddressList
     fun onTapDeleteButtonOnAddressList(address: Address)
     /// Sự kiện khi ứng dụng được open khi user chọn notification
@@ -80,6 +80,8 @@ interface HomeView {
     fun clearAllUIncidents()
     fun renderUIncidents(list: List<UserIncident>)
     fun clipboard(text: String)
+
+    fun showToast(message: String)
 }
 
 data class HomeAddressRow(val address: Address, val result: AnalyseResult)
@@ -111,14 +113,21 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onSubmitAddress(
         addressName: String,
         location: LatLng,
-        startTime: LocalDateTime?,
-        endTime: LocalDateTime?
+        startTime: Int?,
+        endTime: Int?
     ) {
+        if(startTime == null || endTime == null) {
+            view.showToast("Vui lòng thiết lập thời gian nhận thông báo")
+            return
+        }
+
         val newAddress = Address(
             id = null,
             description = addressName,
             lat = location.latitude.toFloat(),
-            lng = location.longitude.toFloat()
+            lng = location.longitude.toFloat(),
+            startTime = startTime,
+            endTime = endTime,
         )
 
         dbService.saveAddress(newAddress, completion = {

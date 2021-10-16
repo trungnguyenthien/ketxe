@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"/>
 
     <EditText
+        android:id="@+id/text_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
@@ -23,18 +24,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <EditText
+        <Button
+            android:id="@+id/btn_start_time"
             android:layout_weight="1"
             android:hint="Bắt đầu"
+            android:backgroundTint="@color/cardview_shadow_start_color"
+            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
 
-        <EditText
+        <Button
+            android:id="@+id/btn_end_time"
             android:layout_weight="1"
             android:hint="Kết thúc"
+            android:backgroundTint="@color/cardview_shadow_start_color"
+            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
     </LinearLayout>
 
 

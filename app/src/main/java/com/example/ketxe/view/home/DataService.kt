@@ -7,7 +7,9 @@ data class Address(
     val id: String?,
     val description: String,
     val lat: Float,
-    val lng: Float
+    val lng: Float,
+    val startTime: Int,
+    val endTime: Int,
 )
 
 data class Stuck(

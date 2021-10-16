@@ -23,6 +23,7 @@ import com.example.ketxe.databinding.ActivityMapsBinding
 import com.example.ketxe.entity.UserIncident
 import com.example.ketxe.view.AddAddressFragment
 import com.example.ketxe.view.home.*
+import com.example.ketxe.view.push
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -221,17 +222,16 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
         clipboard.setPrimaryClip(clip)
     }
 
+    override fun showToast(message: String) {
+        Toast.makeText(this, message , Toast.LENGTH_SHORT).show();
+    }
+
     override fun renderClosedRoadLines(closeRoad: List<Stuck>) {
         ggMyMapFragment.addClosedRoadLines(stucks = closeRoad)
     }
 
     private fun present(fragment: Fragment) {
-        val fragmentManger = supportFragmentManager
-        val transaction = fragmentManger.beginTransaction()
-        transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-        transaction.replace(R.id.main_fragment_container, fragment)
-        transaction.addToBackStack(null)
-        transaction.commit()
+        push(fragment = fragment, atLayoutId = R.id.main_fragment_container)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -266,13 +266,13 @@ class MapsActivity : AppCompatActivity(), HomeView, DrawerLayout.DrawerListener,
 
     override fun onDrawerStateChanged(newState: Int) {}
 
-    override fun onSaveClick(address: String, startTime: LocalDateTime?, endTime: LocalDateTime?) {
+    override fun onSaveClick(address: String, startTimeByMinInDay: Int?, endTimeByMinInDay: Int?) {
         val currentMarkerLocation = ggMyMapFragment.currentMarkerLocation() ?: return
         presenter.onSubmitAddress(
             addressName = address,
             location = currentMarkerLocation,
-            startTime = startTime,
-            endTime = endTime
+            startTime = startTimeByMinInDay,
+            endTime = endTimeByMinInDay
         )
     }
 }

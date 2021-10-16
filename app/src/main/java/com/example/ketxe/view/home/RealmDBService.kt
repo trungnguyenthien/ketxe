@@ -156,6 +156,8 @@ open class DbAddress : RealmObject() {
     var description: String = ""
     var latitude: Float = 0.0f
     var longitude: Float = 0.0f
+    var startTime: Int = 0
+    var endTime: Int = 0
 }
 
 open class DbStuck : RealmObject() {
@@ -199,7 +201,7 @@ open class DbIncident : RealmObject() {
 
 fun DbIncident.toEntity() = UserIncident(lat = latitude, lng = longitude)
 
-fun DbAddress.toEntity() = Address(id, description, latitude, longitude)
+fun DbAddress.toEntity() = Address(id, description, latitude, longitude, startTime, endTime)
 
 fun genId(): String {
     val id = UUID.randomUUID().toString()
