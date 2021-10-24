@@ -43,16 +43,16 @@ class BackgroundJob(val context: Context) {
     private fun process(address: Address, callback: () -> Unit) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
         api.request(ll, radius = 2.0, completion = { resources, userIncidents ->
-            updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks ->
-                if(!allowPlaySound(newStucks)) return@updateStucksInDB
-                showNotification(address, newStucks)
+            updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks, newUIncidents ->
+                if(!allowPlaySound(newStucks, newUIncidents)) return@updateStucksInDB
+                showNotification(address, newStucks, newUIncidents)
                 callback.invoke()
             })
         })
     }
 
-    private fun allowPlaySound(stucks: List<Stuck>): Boolean {
-        val result = analyse(stucks)
+    private fun allowPlaySound(stucks: List<Stuck>, uIncidents: List<UserIncident>): Boolean {
+        val result = analyse(stucks, uIncidents)
         return (result.closesRoadsCount + result.seriousCount + result.noSeriousCount) > 0
     }
 
@@ -68,7 +68,7 @@ class BackgroundJob(val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun updateStucksInDB(address: Address, resources: List<Resources>, uincidents: List<UserIncident>, completion: (Address, List<Stuck>) -> Unit) {
+    private fun updateStucksInDB(address: Address, resources: List<Resources>, uincidents: List<UserIncident>, completion: (Address, List<Stuck>, List<UserIncident>) -> Unit) {
         val addressId = address.id ?: ""
         dbService.delete(addressId = addressId, completion = {
             val newStucks = resources.filter {
@@ -95,14 +95,14 @@ class BackgroundJob(val context: Context) {
             }
 
             dbService.save(addressId = addressId, stucks = newStucks, uincidents = uincidents, completion = {
-                completion.invoke(address, newStucks)
+                completion.invoke(address, newStucks, uincidents)
             })
         })
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showNotification(address: Address, stucks: List<Stuck>) {
-        val result = analyse(stucks)
+    private fun showNotification(address: Address, stucks: List<Stuck>, uIncidents: List<UserIncident>) {
+        val result = analyse(stucks, uIncidents)
         val vibratePattern = longArrayOf(0, 250, 100, 250)
 
         val mBuilder = NotificationCompat.Builder(context, channelID)

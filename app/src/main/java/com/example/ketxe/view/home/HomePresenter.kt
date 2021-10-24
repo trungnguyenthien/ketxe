@@ -149,7 +149,8 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
     override fun onOpenFromNotification(addressId: String) {
         val stucks = dbService.getLastestStuck(addressId)
         val uincidents = dbService.getLastestIncident(addressId)
-        val analyseResult = analyse(stucks)
+        val analyseResult = analyse(stucks, uincidents)
+
         view.clearAllStuckLines()
         view.clearAllUIncidents()
         view.renderUIncidents(list = uincidents)
@@ -162,7 +163,7 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         dbService.getAddress(addressId)?.let { address ->
             val stucks = dbService.getLastestStuck(addressId)
             val uincidents = dbService.getLastestIncident(addressId)
-            val analyseResult = analyse(stucks)
+            val analyseResult = analyse(stucks, uincidents)
 
             val location = LatLng(address.lat.toDouble(), address.lng.toDouble())
 
@@ -234,10 +235,12 @@ class HomePresenterImpl(private val view: HomeView) : HomePresenter {
         val outputRows = ArrayList<HomeAddressRow>()
 
         val list = dbService.getAllAddress()
+
         list.forEach { address ->
             val addressId = address.id ?: ""
             val stucks = dbService.getLastestStuck(addressId)
-            val row = HomeAddressRow(address, analyse(stucks))
+            val uIncidents = dbService.getLastestIncident(addressId)
+            val row = HomeAddressRow(address, analyse(stucks, uIncidents))
             outputRows.add(row)
         }
         completion.invoke(outputRows)
@@ -260,7 +263,7 @@ data class AnalyseResult(
 )
 
 /// Phân loại các điểm kẹt xe.
-fun analyse(stucks: List<Stuck>): AnalyseResult {
+fun analyse(stucks: List<Stuck>, uIncidents: List<UserIncident>): AnalyseResult {
     val distinctStucks = stucks.distinctBy { it.title }
 
     val closeRoad =  distinctStucks.filter { it.isClosedRoad }
@@ -268,7 +271,7 @@ fun analyse(stucks: List<Stuck>): AnalyseResult {
     val noSeriousStucks = distinctStucks.filter { it.severity != StuckSeverity.Serious && !it.isClosedRoad }
 
     val closesRoadsCount = closeRoad.map { it.title }.distinct().size
-    val seriousCount = seriousStucks.map { it.title }.distinct().size
+    val seriousCount = seriousStucks.map { it.title }.distinct().size + uIncidents.size
     val noSeriousCount = noSeriousStucks.map { it.title }.distinct().size
 
     return AnalyseResult(

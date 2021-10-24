@@ -99,17 +99,13 @@ class MyMapFragment : Fragment() {
     }
 
     private fun addLine(stucks: List<Stuck>, lineType: LineType) {
-        fun addPolyline() {
+        waitMapAvailable { ggMap ->
             activity?.runOnUiThread {
                 val options = stucks.map { makePolygonOption(lineType, it)}
-                val polylines = options.map { ggMap?.addPolyline(it) }.filterNotNull()
+                val polylines = options.mapNotNull { ggMap.addPolyline(it) }
                 listStuckPolyline.addAll(polylines)
             }
         }
-        Thread {
-            while (ggMap == null) { Thread.sleep(50) }
-            addPolyline()
-        }.start()
     }
 
     private enum class LineType(val resColorId: Int) {
@@ -137,16 +133,22 @@ class MyMapFragment : Fragment() {
         listStuckMarker.clear()
     }
 
+    private fun waitMapAvailable(block: (GoogleMap) -> Unit) {
+        Thread {
+            while (ggMap == null) { Thread.sleep(50) }
+            block.invoke(ggMap!!)
+        }.start()
+    }
+
     private var listStuckMarker = ArrayList<Marker>()
     fun renderUIncidents(list: List<UserIncident>) {
-        activity?.runOnUiThread {
-            ggMap?.let { ggMap ->
+        waitMapAvailable { ggMap ->
+            activity?.runOnUiThread {
                 val options = list.map { makeIncidentMarker(it) }
                 val markers = options.map { ggMap.addMarker(it) }.filterNotNull()
                 listStuckMarker.addAll(markers)
             }
         }
-
     }
 
     private fun makeIncidentMarker(incident: UserIncident): MarkerOptions {
