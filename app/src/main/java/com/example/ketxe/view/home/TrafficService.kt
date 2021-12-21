@@ -27,7 +27,7 @@ interface TrafficService {
 class TrafficBingService: TrafficService {
     override fun urlRequest(location: LatLng): String {
         val area = makeBoundingBox(location.latitude, location.longitude, 2.0)
-        val call = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
+        val call = virtualEarthAPI.incident(area.toString(), "1,2,3,4", bingKey)
         return call.request().url().url().toString()
     }
 
@@ -64,7 +64,7 @@ class TrafficBingService: TrafficService {
             if(output1 == null || output2 == null) { return }
             completion.invoke(output1!!, output2!!)
         }
-        val veCall = virtualEarthAPI.incident(area.toString(), "3,4", bingKey)
+        val veCall = virtualEarthAPI.incident(area.toString(), "1,2,3,4", bingKey)
         veCall.enqueue(object: Callback<IncidentsResponse> {
             override fun onResponse(call: Call<IncidentsResponse>, response: Response<IncidentsResponse>) {
                 if(!response.isSuccessful) {

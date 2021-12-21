@@ -42,7 +42,7 @@ class BackgroundJob(val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun process(address: Address, callback: () -> Unit) {
         val ll = LatLng(address.lat.toDouble(), address.lng.toDouble())
-        api.request(ll, radius = 2.0, completion = { resources, userIncidents ->
+        api.request(ll, radius = 20.0, completion = { resources, userIncidents ->
             updateStucksInDB(address, resources, userIncidents, completion = { address, newStucks, newUIncidents ->
                 if(!allowPlaySound(newStucks, newUIncidents)) return@updateStucksInDB
                 showNotification(address, newStucks, newUIncidents)
