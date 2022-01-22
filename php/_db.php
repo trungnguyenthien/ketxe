@@ -81,7 +81,7 @@ function db_search_incident($minLat, $minLng, $maxLat, $maxLng) {
 
 function db_check_duplicate_incident($lat, $lng) {
     $conn = connection();
-    $d = 0.003;
+    $d = 0.00006; // ~300 metter
     $minLat = $lat - $d;
     $maxLat = $lat + $d;
     $minLng = $lng - $d;
