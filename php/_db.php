@@ -38,7 +38,7 @@ function genUUID() {
 
 function db_clean_old_incident() {
     $conn = connection();
-    $sql = "DELETE FROM tb_incident WHERE TIME_TO_SEC(now()) - TIME_TO_SEC(reportTime) > 3600";
+    $sql = "DELETE FROM tb_incident WHERE reportTime < (now() - interval 1 hour)";
     mysqli_query($conn, $sql);
     $conn->close();
 }
