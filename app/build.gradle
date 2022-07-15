@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' version '1.6.10' apply true
+    id "org.jetbrains.kotlin.android" version "$kotlin_version" apply true
 }
 
 apply plugin: 'kotlin-kapt'
@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "com.example.ketxe"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
 
